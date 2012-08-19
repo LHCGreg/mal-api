@@ -1,0 +1,8 @@
+syntax: glob
+*.suo
+*.csproj.user
+bin
+obj
+*~
+*.userprefs
+*.pidb
