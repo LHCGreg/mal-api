@@ -207,12 +207,20 @@ namespace MalApi
         // Rumor has it that compiled regexes are far more performant than non-compiled regexes on large pieces of text.
         // I haven't profiled it though.
         private static Lazy<Regex> s_tagElementContentsRegex =
-            new Lazy<Regex>(() => new Regex("<my_tags>(?<TagText>.*?)</my_tags>", RegexOptions.Compiled));
+            new Lazy<Regex>(() => new Regex("<my_tags>(?<TagText>.*?)</my_tags>", RegexOptions.Compiled | RegexOptions.CultureInvariant ));
         private static Regex TagElementContentsRegex { get { return s_tagElementContentsRegex.Value; } }
 
-        // Replace & with &amp; only if the & is not part of &lt;
-        private static MatchEvaluator TagElementContentsReplacer = (Match match) => string.Format("<my_tags>{0}</my_tags>",
-                match.Groups["TagText"].Value.Replace("&lt;", "<").Replace("&", "&amp;").Replace("<", "&lt;"));
+        private static Lazy<Regex> s_tagTextReplacementRegex =
+            new Lazy<Regex>(() => new Regex("&(?!lt;)(?!gt;)(?!amp;)(?!apos;)(?!quot;)(?!#x[0-9a-fA-f]+;)(?!#[0-9]+;)", RegexOptions.Compiled | RegexOptions.CultureInvariant));
+        private static Regex TagTextReplacementRegex { get { return s_tagTextReplacementRegex.Value; } }
+
+        // Replace & with &amp; only if the & is not part of &lt; &gt; &amp; &apos; &quot; &#x<hex digits>; &#<decimal digits>;
+        private static MatchEvaluator TagElementContentsReplacer = (Match match) =>
+            {
+                string tagText = match.Groups["TagText"].Value;
+                string replacementTagText = TagTextReplacementRegex.Replace(tagText, "&amp;");
+                return "<my_tags>" + replacementTagText + "</my_tags>";
+            };
 
         /// <summary>
         /// Sanitizes anime list XML which is not always well-formed. If a user uses &amp; characters in their tags,
