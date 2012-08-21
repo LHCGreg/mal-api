@@ -61,18 +61,20 @@ namespace MalApi
             try
             {
                 Logging.Log.DebugFormat("Starting MAL request to {0}", request.RequestUri);
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                Logging.Log.DebugFormat("Got response. Status code = {0}.", response.StatusCode);
-                if (response.StatusCode != HttpStatusCode.OK)
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                 {
-                    throw new MalApiRequestException(string.Format("{0} Status code was {1}.", baseErrorMessage, response.StatusCode));
-                }
+                    Logging.Log.DebugFormat("Got response. Status code = {0}.", response.StatusCode);
+                    if (response.StatusCode != HttpStatusCode.OK)
+                    {
+                        throw new MalApiRequestException(string.Format("{0} Status code was {1}.", baseErrorMessage, response.StatusCode));
+                    }
 
-                using (Stream responseBodyStream = response.GetResponseStream())
-                using (StreamReader responseBodyReader = new StreamReader(responseBodyStream, Encoding.UTF8))
-                {
-                    // XXX: Shouldn't be hardcoding UTF-8
-                    responseBody = responseBodyReader.ReadToEnd();
+                    using (Stream responseBodyStream = response.GetResponseStream())
+                    using (StreamReader responseBodyReader = new StreamReader(responseBodyStream, Encoding.UTF8))
+                    {
+                        // XXX: Shouldn't be hardcoding UTF-8
+                        responseBody = responseBodyReader.ReadToEnd();
+                    }
                 }
 
                 Logging.Log.Debug("Read response body.");
