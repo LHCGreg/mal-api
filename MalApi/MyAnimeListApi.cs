@@ -212,15 +212,21 @@ namespace MalApi
             new Lazy<Regex>(() => new Regex("<my_tags>(?<TagText>.*?)</my_tags>", RegexOptions.Compiled | RegexOptions.CultureInvariant ));
         private static Regex TagElementContentsRegex { get { return s_tagElementContentsRegex.Value; } }
 
-        private static Lazy<Regex> s_tagTextReplacementRegex =
+        private static Lazy<Regex> s_nonEntityAmpersandRegex =
             new Lazy<Regex>(() => new Regex("&(?!lt;)(?!gt;)(?!amp;)(?!apos;)(?!quot;)(?!#x[0-9a-fA-f]+;)(?!#[0-9]+;)", RegexOptions.Compiled | RegexOptions.CultureInvariant));
-        private static Regex TagTextReplacementRegex { get { return s_tagTextReplacementRegex.Value; } }
+        private static Regex NonEntityAmpersandRegex { get { return s_nonEntityAmpersandRegex.Value; } }
+
+        // Remove any code points not in: U+0009, U+000A, U+000D, U+0020–U+D7FF, U+E000–U+FFFD (see http://en.wikipedia.org/wiki/Xml)
+        private static Lazy<Regex> s_invalidXmlCharacterRegex =
+            new Lazy<Regex>(() => new Regex("[^\\u0009\\u000A\\u000D\\u0020-\\uD7FF\\uE000-\\uFFFD]", RegexOptions.Compiled | RegexOptions.CultureInvariant));
+        private static Regex InvalidXmlCharacterRegex { get { return s_invalidXmlCharacterRegex.Value; } }
 
         // Replace & with &amp; only if the & is not part of &lt; &gt; &amp; &apos; &quot; &#x<hex digits>; &#<decimal digits>;
         private static MatchEvaluator TagElementContentsReplacer = (Match match) =>
             {
                 string tagText = match.Groups["TagText"].Value;
-                string replacementTagText = TagTextReplacementRegex.Replace(tagText, "&amp;");
+                string replacementTagText = NonEntityAmpersandRegex.Replace(tagText, "&amp;");
+                replacementTagText = InvalidXmlCharacterRegex.Replace(replacementTagText, "");
                 return "<my_tags>" + replacementTagText + "</my_tags>";
             };
 

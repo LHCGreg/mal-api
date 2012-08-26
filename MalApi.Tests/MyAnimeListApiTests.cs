@@ -55,7 +55,7 @@ namespace MalApi.Tests
                 Assert.That(entry.MyStartDate, Is.EqualTo(new UncertainDate(year: null, month: 2, day: null)));
                 Assert.That(entry.MyFinishDate, Is.EqualTo(UncertainDate.Unknown));
                 Assert.That(entry.MyLastUpdate, Is.EqualTo(new DateTime(year: 2011, month: 4, day: 2, hour: 22, minute: 50, second: 58, kind: DateTimeKind.Utc)));
-                Assert.That(entry.Tags, Is.EqualTo(new List<string>() { "test&test", "< less than", "> greater than", "apos '", "quote \"", "hex ö", "dec !" }));
+                Assert.That(entry.Tags, Is.EqualTo(new List<string>() { "test&test", "< less than", "> greater than", "apos '", "quote \"", "hex ö", "dec !", "control character" }));
             }
         }
     }
