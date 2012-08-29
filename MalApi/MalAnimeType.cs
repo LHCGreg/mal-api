@@ -7,11 +7,16 @@ namespace MalApi
 {
     public enum MalAnimeType
     {
+        /// <summary>
+        /// The type has not been entered in MAL's database yet.
+        /// </summary>
+        Unknown = 0,
         Tv = 1,
         Ova = 2,
         Movie = 3,
         Special = 4,
         Ona = 5,
+        Music = 6
     }
 }
 
