@@ -15,13 +15,13 @@ namespace MalApi
     {
         private IMyAnimeListApi m_underlyingApi;
         private bool m_ownUnderlyingApi;
-        private MyAnimeListCache m_cache;
+        private AnimeListCache m_cache;
 
         public CachingMyAnimeListApi(IMyAnimeListApi underlyingApi, TimeSpan? expiration, bool ownApi = false)
         {
             m_underlyingApi = underlyingApi;
             m_ownUnderlyingApi = ownApi;
-            m_cache = new MyAnimeListCache(expiration);
+            m_cache = new AnimeListCache(expiration);
         }
 
         public MalUserLookupResults GetAnimeListForUser(string user)

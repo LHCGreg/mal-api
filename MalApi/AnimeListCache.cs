@@ -11,7 +11,7 @@ namespace MalApi
     /// the object. Expired cache entries are only actually removed when a new anime list is inserted into the cache. Cache expiration
     /// measurement is susceptible to changes to the system clock.
     /// </summary>
-    internal class MyAnimeListCache
+    internal class AnimeListCache : IDisposable
     {
         private Dictionary<string, MalUserLookupResults> m_animeListCache =
             new Dictionary<string, MalUserLookupResults>(StringComparer.InvariantCultureIgnoreCase);
@@ -21,13 +21,13 @@ namespace MalApi
 
         private ReaderWriterLockSlim m_cacheLock = new ReaderWriterLockSlim();
 
-        public MyAnimeListCache(TimeSpan? expiration)
+        public AnimeListCache(TimeSpan? expiration)
         {
             m_expiration = expiration;
             if (m_expiration != null)
             {
                 m_cachePutTimesSortedByTime = new LinkedList<Tuple<string, DateTime>>();
-                m_cachePutTimesByName = new Dictionary<string, LinkedListNode<Tuple<string, DateTime>>>();
+                m_cachePutTimesByName = new Dictionary<string, LinkedListNode<Tuple<string, DateTime>>>(StringComparer.InvariantCultureIgnoreCase);
             }
         }
 
