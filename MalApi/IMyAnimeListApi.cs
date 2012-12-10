@@ -12,7 +12,8 @@ namespace MalApi
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        /// <exception cref="AnimeCompatibility.MalUserNotFoundException"></exception>
+        /// <exception cref="MalApi.MalUserNotFoundException"></exception>
+        /// <exception cref="MalApi.MalApiException"></exception>
         MalUserLookupResults GetAnimeListForUser(string user);
 
         RecentUsersResults GetRecentOnlineUsers();
