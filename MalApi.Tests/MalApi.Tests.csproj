@@ -42,8 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnimeListCacheTests.cs" />
-    <Compile Include="MyAnimeListApiTests.cs" />
-    <Compile Include="MyAnimeListApiTests.xml.cs" />
+    <Compile Include="MalAppInfoXmlTests.cs" />
+    <Compile Include="MalAppInfoXmlTests.xml.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
