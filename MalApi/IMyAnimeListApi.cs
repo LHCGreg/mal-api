@@ -17,6 +17,13 @@ namespace MalApi
         MalUserLookupResults GetAnimeListForUser(string user);
 
         RecentUsersResults GetRecentOnlineUsers();
+
+        /// <summary>
+        /// Gets information from an anime's "details" page.
+        /// </summary>
+        /// <param name="animeId"></param>
+        /// <returns></returns>
+        AnimeDetailsResults GetAnimeDetails(int animeId);
     }
 }
 /*

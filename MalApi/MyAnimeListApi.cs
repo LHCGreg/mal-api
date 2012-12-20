@@ -25,7 +25,7 @@ namespace MalApi
         public string UserAgent { get; set; }
 
         private int m_timeoutInMs = 15 * 1000;
-        
+
         /// <summary>
         /// Timeout in milliseconds for requests to MAL. Defaults to 15000 (15s).
         /// </summary>
@@ -57,6 +57,11 @@ namespace MalApi
 
         private TReturn ProcessRequest<TReturn>(HttpWebRequest request, Func<string, TReturn> processingFunc, string baseErrorMessage)
         {
+            return ProcessRequest(request, (string html, object dummy) => processingFunc(html), (object)null, baseErrorMessage);
+        }
+
+        private TReturn ProcessRequest<TReturn, TData>(HttpWebRequest request, Func<string, TData, TReturn> processingFunc, TData data, string baseErrorMessage)
+        {
             string responseBody = null;
             try
             {
@@ -79,9 +84,13 @@ namespace MalApi
 
                 Logging.Log.Debug("Read response body.");
 
-                return processingFunc(responseBody);
+                return processingFunc(responseBody, data);
             }
             catch (MalUserNotFoundException)
+            {
+                throw;
+            }
+            catch (MalAnimeNotFoundException)
             {
                 throw;
             }
@@ -164,7 +173,7 @@ namespace MalApi
             HttpWebRequest request = InitNewRequest(RecentOnlineUsersUri, "GET");
 
             RecentUsersResults recentUsers = ProcessRequest(request, ScrapeUsersFromHtml,
-                baseErrorMessage: string.Format("Failed getting list of recent MAL users."));
+                baseErrorMessage: "Failed getting list of recent MAL users.");
 
             Logging.Log.Info("Successfully got list of recent online MAL users.");
             return recentUsers;
@@ -188,6 +197,56 @@ namespace MalApi
             return new RecentUsersResults(users);
         }
 
+        private static readonly string AnimeDetailsUrlFormat = "http://myanimelist.net/anime/{0}";
+        private static Lazy<Regex> s_animeDetailsRegex = new Lazy<Regex>(() => new Regex(
+            @"Genres:</span> \n.*?(?:<a href=""http://myanimelist.net/anime.php\?genre\[\]=(?<GenreId>\d+)"">(?<GenreName>.*?)</a>(?:, )?)*</div>",
+            RegexOptions.Compiled));
+        private static Regex AnimeDetailsRegex { get { return s_animeDetailsRegex.Value; } }
+
+        /// <summary>
+        /// Gets information from an anime's "details" page. This method uses HTML scraping and so may break if MAL changes the HTML.
+        /// </summary>
+        /// <param name="animeId"></param>
+        /// <returns></returns>
+        public AnimeDetailsResults GetAnimeDetails(int animeId)
+        {
+            string url = string.Format(AnimeDetailsUrlFormat, animeId);
+            Logging.Log.InfoFormat("Getting anime details from {0}.", url);
+            HttpWebRequest request = InitNewRequest(url, "GET");
+            AnimeDetailsResults results = ProcessRequest(request, ScrapeAnimeDetailsFromHtml, animeId,
+                baseErrorMessage: string.Format("Failed getting anime details for anime ID {0}.", animeId));
+            Logging.Log.InfoFormat("Successfully got details from {0}.", url);
+            return results;
+        }
+
+        // internal for unit testing
+        internal AnimeDetailsResults ScrapeAnimeDetailsFromHtml(string animeDetailsHtml, int animeId)
+        {
+            if (animeDetailsHtml.Contains("<div class=\"badresult\">No series found, check the series id and try again.</div>"))
+            {
+                throw new MalAnimeNotFoundException(string.Format("No anime with id {0} exists.", animeId));
+            }
+
+            Match match = AnimeDetailsRegex.Match(animeDetailsHtml);
+            if (!match.Success)
+            {
+                throw new MalApiException(string.Format("Could not extract information from {0}.", string.Format(AnimeDetailsUrlFormat, animeId)));
+            }
+
+            Group genreIds = match.Groups["GenreId"];
+            Group genreNames = match.Groups["GenreName"];
+            List<Genre> genres = new List<Genre>();
+            for (int i = 0; i < genreIds.Captures.Count; i++)
+            {
+                string genreIdString = genreIds.Captures[i].Value;
+                int genreId = int.Parse(genreIdString);
+                string genreName = genreNames.Captures[i].Value;
+                genres.Add(new Genre(genreId: genreId, name: genreName));
+            }
+
+            return new AnimeDetailsResults(genres);
+        }
+
         public void Dispose()
         {
             ;
@@ -196,7 +255,7 @@ namespace MalApi
 }
 
 /*
- Copyright 2011 Greg Najda
+ Copyright 2012 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

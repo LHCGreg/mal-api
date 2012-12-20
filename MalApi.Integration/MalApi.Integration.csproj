@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GetAnimeDetailsTest.cs" />
     <Compile Include="GetAnimeListForUserTest.cs" />
     <Compile Include="GetRecentOnlineUsersTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

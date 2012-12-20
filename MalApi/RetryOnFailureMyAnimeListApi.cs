@@ -25,21 +25,20 @@ namespace MalApi
             m_ownApi = ownApi;
         }
 
-        public MalUserLookupResults GetAnimeListForUser(string user)
+        private TResult DoActionWithRetry<TResult>(Func<TResult> action, string baseErrorMessage)
         {
-            MalUserLookupResults userLookup = null;
+            bool success = false;
             int numTries = 0;
-
-            while (userLookup == null)
+            while (true)
             {
                 try
                 {
-                    userLookup = m_underlyingApi.GetAnimeListForUser(user);
+                    return action();
                 }
                 catch (MalApiRequestException ex)
                 {
                     numTries++;
-                    Logging.Log.ErrorFormat("Error getting anime list for user {0} (failure {1}): {2}", ex, user, numTries, ex.Message);
+                    Logging.Log.ErrorFormat("{0} (failure {1}): {2}", ex, baseErrorMessage, numTries, ex.Message);
 
                     if (numTries < m_numTriesBeforeGivingUp)
                     {
@@ -52,39 +51,24 @@ namespace MalApi
                     }
                 }
             }
+        }
 
-            return userLookup;
+        public MalUserLookupResults GetAnimeListForUser(string user)
+        {
+            return DoActionWithRetry(() => m_underlyingApi.GetAnimeListForUser(user),
+                baseErrorMessage: string.Format("Error getting anime list for user {0}", user));
         }
 
         public RecentUsersResults GetRecentOnlineUsers()
         {
-            RecentUsersResults recentMalUsers = null;
-            int numTries = 0;
+            return DoActionWithRetry(() => m_underlyingApi.GetRecentOnlineUsers(),
+                baseErrorMessage: "Error getting recently active MAL users");
+        }
 
-            while (recentMalUsers == null)
-            {
-                try
-                {
-                    recentMalUsers = m_underlyingApi.GetRecentOnlineUsers();
-                }
-                catch (MalApiRequestException ex)
-                {
-                    numTries++;
-                    Logging.Log.ErrorFormat("Error getting recently active MAL users (failure {0}): {1}", ex, numTries, ex.Message);
-
-                    if (numTries < m_numTriesBeforeGivingUp)
-                    {
-                        Logging.Log.InfoFormat("Waiting {0} ms before trying again.", m_timeBetweenRetriesInMs);
-                        Thread.Sleep(m_timeBetweenRetriesInMs);
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-            }
-
-            return recentMalUsers;
+        public AnimeDetailsResults GetAnimeDetails(int animeId)
+        {
+            return DoActionWithRetry(() => m_underlyingApi.GetAnimeDetails(animeId),
+                baseErrorMessage: string.Format("Error getting details for anime id {0}", animeId));
         }
 
         public void Dispose()

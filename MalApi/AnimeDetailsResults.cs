@@ -5,24 +5,19 @@ using System.Text;
 
 namespace MalApi
 {
-    /// <summary>
-    /// Indicates that the user that was searched for does not exist.
-    /// </summary>
-    [Serializable]
-    public class MalUserNotFoundException : MalApiException
+    public class AnimeDetailsResults
     {
-        public MalUserNotFoundException() { }
-        public MalUserNotFoundException(string message) : base(message) { }
-        public MalUserNotFoundException(string message, Exception inner) : base(message, inner) { }
-        protected MalUserNotFoundException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
+        public IList<Genre> Genres { get; private set; }
+
+        public AnimeDetailsResults(IList<Genre> genres)
+        {
+            Genres = genres;
+        }
     }
 }
 
 /*
- Copyright 2011 Greg Najda
+ Copyright 2012 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

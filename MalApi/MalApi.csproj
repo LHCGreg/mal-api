@@ -41,12 +41,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnimeDetailsResults.cs" />
     <Compile Include="AnimeListCache.cs" />
     <Compile Include="CachingMyAnimeListApi.cs" />
     <Compile Include="CompletionStatus.cs" />
+    <Compile Include="Genre.cs" />
     <Compile Include="IMyAnimeListApi.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="MalAnimeInfoFromUserLookup.cs" />
+    <Compile Include="MalAnimeNotFoundException.cs" />
     <Compile Include="MalAnimeType.cs" />
     <Compile Include="MalApiRequestException.cs" />
     <Compile Include="MalAppInfoXml.cs" />

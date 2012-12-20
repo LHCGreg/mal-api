@@ -90,6 +90,22 @@ namespace MalApi
             }
         }
 
+        public AnimeDetailsResults GetAnimeDetails(int animeId)
+        {
+            lock (m_syncHandle)
+            {
+                SleepIfNeeded();
+                try
+                {
+                    return m_underlyingApi.GetAnimeDetails(animeId);
+                }
+                finally
+                {
+                    SetStopwatch();
+                }
+            }
+        }
+
         public void Dispose()
         {
             if (m_ownApi && m_underlyingApi != null)

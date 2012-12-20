@@ -10,6 +10,8 @@ namespace MalApi
     /// This class is thread-safe if the underlying API is. If the expiration time is null, anime lists are cached for the lifetime of
     /// the object. Expired cache entries are only actually removed when a new anime list is inserted into the cache. Cache expiration
     /// measurement is susceptible to changes to the system clock.
+    /// 
+    /// This class only caches user anime lists from GetAnimeListForUser(). Other functions are not cached.
     /// </summary>
     public class CachingMyAnimeListApi : IMyAnimeListApi
     {
@@ -65,6 +67,11 @@ namespace MalApi
         public RecentUsersResults GetRecentOnlineUsers()
         {
             return m_underlyingApi.GetRecentOnlineUsers();
+        }
+
+        public AnimeDetailsResults GetAnimeDetails(int animeId)
+        {
+            return m_underlyingApi.GetAnimeDetails(animeId);
         }
 
         public void Dispose()

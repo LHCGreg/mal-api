@@ -44,6 +44,7 @@
     <Compile Include="AnimeListCacheTests.cs" />
     <Compile Include="MalAppInfoXmlTests.cs" />
     <Compile Include="MalAppInfoXmlTests.xml.cs" />
+    <Compile Include="MyAnimeListApiTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +52,11 @@
       <Project>{85BC477F-4798-4006-A342-715E7565B3BB}</Project>
       <Name>MalApi</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Eureka_Seven.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
