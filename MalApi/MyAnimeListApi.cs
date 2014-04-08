@@ -157,7 +157,7 @@ namespace MalApi
         }
 
         private static Lazy<Regex> s_recentOnlineUsersRegex =
-            new Lazy<Regex>(() => new Regex("myanimelist.net/profile/(?<Username>[^\"]+)\">\\k<Username>",
+            new Lazy<Regex>(() => new Regex("/profile/(?<Username>[^\"]+)\">\\k<Username>",
                 RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase));
         public static Regex RecentOnlineUsersRegex { get { return s_recentOnlineUsersRegex.Value; } }
 
