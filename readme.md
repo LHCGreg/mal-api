@@ -1,16 +1,21 @@
 MalApi is a .NET library written in C# for accessing the myanimelist.net API or using scraping methods where no official API is available. Using it is easy:
 
+```C#
 using (MyAnimeListApi api = new MyAnimeListApi())
 {
+	api.UserAgent = "my_app"; // MAL now requires applications to be whitelisted. Whitelisted applications identify themselves by their user agent.
 	MalUserLookupResults userLookup = api.GetAnimeListForUser("LordHighCaptain");
 	foreach (MyAnimeListEntry listEntry in userLookup.AnimeList)
 	{
 		Console.WriteLine("Rating for {0}: {1}", listEntry.AnimeInfo.Title, listEntry.Score);
 	}
 }
+```
+
+Binaries are available on the [releases](https://github.com/LHCGreg/mal-api/releases) page.
 
 MalApi currently contains these MAL functions:
-- Getting a user's anime list via http://myanimelist.net/malappinfo.php?status=all&type=anime&u=<username>
+- Getting a user's anime list via http://myanimelist.net/malappinfo.php?status=all&type=anime&u=username
 - Getting a list of recently online users from http://myanimelist.net/users.php
 - Getting an anime's genres from the anime's page.
 
