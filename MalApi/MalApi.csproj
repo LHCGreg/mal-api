@@ -80,8 +80,18 @@
       <Link>notice.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="MalApi.nuspec" />
+    <None Include="MalApi.targets" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="package\license.txt" />
+    <Content Include="package\notice.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="package\lib\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
+  <Import Project="MalApi.targets "/>
 </Project>
