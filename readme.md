@@ -12,10 +12,10 @@ using (MyAnimeListApi api = new MyAnimeListApi())
 }
 ```
 
-Binaries are available on the [releases](https://github.com/LHCGreg/mal-api/releases) page.
+Binaries are available as a [NuGet package](https://www.nuget.org/packages/MalApi/) called MalApi and on the [releases](https://github.com/LHCGreg/mal-api/releases) page.
 
 MalApi currently contains these MAL functions:
-- Getting a user's anime list via http://myanimelist.net/malappinfo.php?status=all&type=anime&u=username
+- Getting a user's anime list via http://myanimelist.net/malappinfo.php?status=all&type=anime&u=username. MalApi handles even malformed XML that MAL can generate when users put certain characters in tags.
 - Getting a list of recently online users from http://myanimelist.net/users.php
 - Getting an anime's genres from the anime's page.
 
