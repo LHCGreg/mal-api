@@ -12,7 +12,7 @@ namespace MalApi
     {
         /// <summary>
         /// Parses XML obtained from malappinfo.php. The XML is sanitized to account for MAL's invalid XML if, for example,
-        /// a user has a & character in their tags.
+        /// a user has a &amp; character in their tags.
         /// </summary>
         /// <param name="xmlTextReader"></param>
         /// <returns></returns>
