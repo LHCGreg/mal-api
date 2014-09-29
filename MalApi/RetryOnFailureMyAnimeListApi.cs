@@ -27,7 +27,6 @@ namespace MalApi
 
         private TResult DoActionWithRetry<TResult>(Func<TResult> action, string baseErrorMessage)
         {
-            bool success = false;
             int numTries = 0;
             while (true)
             {
