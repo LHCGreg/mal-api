@@ -93,5 +93,5 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
-  <Import Project="MalApi.targets "/>
+  <Import Project="MalApi.targets" />
 </Project>
