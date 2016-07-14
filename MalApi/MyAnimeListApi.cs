@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using HtmlAgilityPack;
 
 namespace MalApi
 {
@@ -228,19 +229,24 @@ namespace MalApi
             }
 
             Match match = AnimeDetailsRegex.Match(animeDetailsHtml);
-            if (!match.Success)
+
+            HtmlDocument htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(animeDetailsHtml);
+            HtmlNodeCollection nodeCollection = htmlDoc.DocumentNode.SelectNodes("//div/a[contains(@href, \"genre\")]/@href");
+
+            if (nodeCollection == null)
             {
                 throw new MalApiException(string.Format("Could not extract information from {0}.", string.Format(AnimeDetailsUrlFormat, animeId)));
             }
 
-            Group genreIds = match.Groups["GenreId"];
-            Group genreNames = match.Groups["GenreName"];
             List<Genre> genres = new List<Genre>();
-            for (int i = 0; i < genreIds.Captures.Count; i++)
+            for (int i = 0; i < nodeCollection.Count; i++)
             {
-                string genreIdString = genreIds.Captures[i].Value;
+                string link = nodeCollection[i].Attributes[0].Value;
+                string[] linkSplit = link.Split('/');
+                string genreIdString = linkSplit[linkSplit.Length - 2];
                 int genreId = int.Parse(genreIdString);
-                string genreName = genreNames.Captures[i].Value;
+                string genreName = linkSplit[linkSplit.Length - 1];
                 genres.Add(new Genre(genreId: genreId, name: genreName));
             }
 

@@ -125,6 +125,14 @@ namespace MalApi
 
             return string.Format("{0}-{1}-{2}", year, month, day);
         }
+
+        public DateTime ToDateTime()
+        {
+            if(Year != null && Month != null && Day != null)
+                return new DateTime((int) Year, (int) Month, (int) Day);
+
+            return DateTime.MaxValue;
+        }
     }
 }
 
