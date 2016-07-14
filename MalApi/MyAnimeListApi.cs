@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using HtmlAgilityPack;
 
 namespace MalApi
 {
@@ -198,10 +199,6 @@ namespace MalApi
         }
 
         private static readonly string AnimeDetailsUrlFormat = "http://myanimelist.net/anime/{0}";
-        private static Lazy<Regex> s_animeDetailsRegex = new Lazy<Regex>(() => new Regex(
-            @"Genres:</span> \n.*?(?:<a href=""http://myanimelist.net/anime.php\?genre\[\]=(?<GenreId>\d+)"">(?<GenreName>.*?)</a>(?:, )?)*</div>",
-            RegexOptions.Compiled));
-        private static Regex AnimeDetailsRegex { get { return s_animeDetailsRegex.Value; } }
 
         /// <summary>
         /// Gets information from an anime's "details" page. This method uses HTML scraping and so may break if MAL changes the HTML.
@@ -227,21 +224,22 @@ namespace MalApi
                 throw new MalAnimeNotFoundException(string.Format("No anime with id {0} exists.", animeId));
             }
 
-            Match match = AnimeDetailsRegex.Match(animeDetailsHtml);
-            if (!match.Success)
+            HtmlDocument htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(animeDetailsHtml);
+            HtmlNodeCollection nodeCollection = htmlDoc.DocumentNode.SelectNodes("//div/a[contains(@href, \"genre\")]/@href");
+
+            if (nodeCollection == null || nodeCollection.Count == 0)
             {
                 throw new MalApiException(string.Format("Could not extract information from {0}.", string.Format(AnimeDetailsUrlFormat, animeId)));
             }
 
-            Group genreIds = match.Groups["GenreId"];
-            Group genreNames = match.Groups["GenreName"];
             List<Genre> genres = new List<Genre>();
-            for (int i = 0; i < genreIds.Captures.Count; i++)
+            for (int i = 0; i < nodeCollection.Count; i++)
             {
-                string genreIdString = genreIds.Captures[i].Value;
+                string genreIdString = Regex.Match(nodeCollection[i].Attributes[0].Value, "[0-9]+").Value;
                 int genreId = int.Parse(genreIdString);
-                string genreName = genreNames.Captures[i].Value;
-                genres.Add(new Genre(genreId: genreId, name: genreName));
+                string genreName = nodeCollection[i].InnerHtml;
+                genres.Add(new Genre(genreId, genreName));
             }
 
             return new AnimeDetailsResults(genres);
@@ -249,7 +247,6 @@ namespace MalApi
 
         public void Dispose()
         {
-            ;
         }
     }
 }
