@@ -11,6 +11,7 @@
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
     <dependencies>
       <dependency id="Common.Logging" version="2.3.1"></dependency>
+      <dependency id="HtmlAgilityPack" version="1.4.9.5"></dependency>
     </dependencies>
     <tags>anime myanimelist myanimelist.net MAL</tags>
   </metadata>
