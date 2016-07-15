@@ -125,6 +125,19 @@ namespace MalApi
 
             return string.Format("{0}-{1}-{2}", year, month, day);
         }
+
+        /// <summary>
+        /// Creates a DateTime from UncertainDate, if possible, null otherwise
+        /// </summary>
+        /// <param></param>
+        /// <returns>Returns DateTime?</returns>
+        public DateTime? ToDateTime()
+        {
+            if(Year != null && Month != null && Day != null)
+                return new DateTime((int) Year, (int) Month, (int) Day);
+
+            return null;
+        }
     }
 }
 
