@@ -199,7 +199,7 @@ namespace MalApi
         }
 
         private static readonly string AnimeDetailsUrlFormat = "http://myanimelist.net/anime/{0}";
-        private static readonly string GenreIDRegex = "[0-9]+";
+        private static readonly string GenreIDRegex = "/genre/(?<genreID>[0-9]+)";
 
         /// <summary>
         /// Gets information from an anime's "details" page. This method uses HTML scraping and so may break if MAL changes the HTML.
@@ -237,11 +237,11 @@ namespace MalApi
 
             //Extract one genre per node
             List<Genre> genres = new List<Genre>();
-            for (int i = 0; i < nodeCollection.Count; i++)
+            foreach (HtmlNode node in nodeCollection)
             {
-                string genreIdString = Regex.Match(nodeCollection[i].Attributes.First().Value, GenreIDRegex).Value;
+                string genreIdString = Regex.Match(node.Attributes["href"].Value, GenreIDRegex).Groups["genreID"].Value;
                 int genreId = int.Parse(genreIdString);
-                string genreName = nodeCollection[i].InnerHtml;
+                string genreName = node.InnerText;
                 genres.Add(new Genre(genreId, genreName));
             }
 

@@ -23,7 +23,6 @@ namespace MalApi.Integration
                     new Genre(18, "Mecha"),
                     new Genre(22, "Romance"),
                     new Genre(24, "Sci-Fi"),
-                    new Genre(27, "Shounen")
                 };
                 Assert.That(results.Genres, Is.EquivalentTo(expectedGenres));
             }

@@ -130,7 +130,6 @@ namespace MalApi
         /// Creates a DateTime from UncertainDate, if possible, null otherwise
         /// </summary>
         /// <param></param>
-        /// <returns>Returns DateTime?</returns>
         public DateTime? ToDateTime()
         {
             if(Year != null && Month != null && Day != null)
