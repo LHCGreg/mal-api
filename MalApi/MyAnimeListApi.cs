@@ -22,8 +22,18 @@ namespace MalApi
 
         /// <summary>
         /// What to set the user agent http header to in API requests. Null to use the default .NET user agent.
+        /// This is current synonymous with the <c>MalApiKey</c> property because that is how API keys
+        /// are passed to MAL.
         /// </summary>
         public string UserAgent { get; set; }
+
+        /// <summary>
+        /// MAL API key to use. Some methods require this to be set or else MAL will return an error.
+        /// The documentation for each method states whether or not this is required.
+        /// This is currently synonymous with the <c>UserAgent</c> property because that is how
+        /// API keys are passed to MAL.
+        /// </summary>
+        public string MalApiKey { get { return UserAgent; } set { UserAgent = value; } }
 
         private int m_timeoutInMs = 15 * 1000;
 
@@ -161,7 +171,7 @@ namespace MalApi
         }
 
         /// <summary>
-        /// 
+        /// Gets a user's anime list. This method requires a MAL API key.
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
@@ -203,7 +213,7 @@ namespace MalApi
 
         /// <summary>
         /// Gets a list of users that have been on MAL recently. This scrapes the HTML on the recent users page and therefore
-        /// can break if MAL changes the HTML on that page.
+        /// can break if MAL changes the HTML on that page. This method does not require a MAL API key.
         /// </summary>
         /// <returns></returns>
         public RecentUsersResults GetRecentOnlineUsers()
@@ -242,6 +252,7 @@ namespace MalApi
         
         /// <summary>
         /// Gets information from an anime's "details" page. This method uses HTML scraping and so may break if MAL changes the HTML.
+        /// This method does not require a MAL API key.
         /// </summary>
         /// <param name="animeId"></param>
         /// <returns></returns>
@@ -305,7 +316,7 @@ namespace MalApi
 }
 
 /*
- Copyright 2012 Greg Najda
+ Copyright 2016 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
