@@ -37,7 +37,7 @@ namespace MalApi.Tests
 }
 
 /*
- Copyright 2012 Greg Najda
+ Copyright 2016 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
