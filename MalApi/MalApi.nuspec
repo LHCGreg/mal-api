@@ -2,10 +2,10 @@
 <package>
   <metadata>
     <id>MalApi</id>
-    <version>2.2.2</version>
+    <version>2.3.3</version>
     <authors>Greg Najda</authors>
     <description>MalApi is a .NET library for accessing the myanimelist.net API. You can get a user's anime list, get a list of recently online users, and get an anime's genres. You must set the UserAgent property of the MyAnimeListApi object to your myanimelist.net API key.</description>
-    <releaseNotes>Updated Common.Logging depdency from 2.2.0 to 2.3.1, remove depedency on deprecated Common.Logging.Core.</releaseNotes>
+    <releaseNotes>GetAnimeDetails updated to work with MAL HTML changes.</releaseNotes>
     <summary>MalApi is a .NET library for accessing the myanimelist.net API.</summary>
     <projectUrl>https://github.com/LHCGreg/mal-api</projectUrl>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
