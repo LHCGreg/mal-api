@@ -3,4 +3,4 @@ obj/
 *.user
 *.suo
 packages/*/
-MalApi/package/lib/net40/*
+MalApi/package/

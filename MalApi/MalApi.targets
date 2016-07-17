@@ -3,6 +3,7 @@
   <Target Name="PrepareForPackage" DependsOnTargets="Build">
     <Message Text="Copying output to package staging area." />
     <Copy SourceFiles="$(OutputPath)MalApi.dll;$(OutputPath)MalApi.xml" DestinationFolder="package/lib/net40" />
+    <Copy SourceFiles="../license.txt;../notice.txt" DestinationFolder="package" />
   </Target>
 
   <Target Name="BuildPackage" DependsOnTargets="PrepareForPackage">
