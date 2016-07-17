@@ -58,29 +58,68 @@ namespace MalApi
 
         private TReturn ProcessRequest<TReturn>(HttpWebRequest request, Func<string, TReturn> processingFunc, string baseErrorMessage)
         {
-            return ProcessRequest(request, (string html, object dummy) => processingFunc(html), (object)null, baseErrorMessage);
+            return ProcessRequest(request, (string html, object dummy) => processingFunc(html), (object)null,
+                httpErrorStatusHandler: null, baseErrorMessage: baseErrorMessage);
         }
 
-        private TReturn ProcessRequest<TReturn, TData>(HttpWebRequest request, Func<string, TData, TReturn> processingFunc, TData data, string baseErrorMessage)
+        /// <summary>
+        /// Expected to do one of the following:
+        /// 1) Set handled to true and return a valid result
+        /// 2) Throw a new exception that better matches the abstraction level, for example a MalAnimeNotFoundException.
+        /// 3) Set handled to false and return anything
+        /// </summary>
+        /// <typeparam name="TData"></typeparam>
+        /// <typeparam name="TReturn"></typeparam>
+        /// <param name="ex"></param>
+        /// <param name="data"></param>
+        /// <param name="handled"></param>
+        /// <returns></returns>
+        delegate TReturn HttpErrorStatusHandler<TData, TReturn>(WebException ex, TData data, out bool handled);
+
+        private TReturn ProcessRequest<TReturn, TData>(HttpWebRequest request, Func<string, TData, TReturn> processingFunc, TData data, HttpErrorStatusHandler<TData, TReturn> httpErrorStatusHandler, string baseErrorMessage)
         {
             string responseBody = null;
             try
             {
                 Logging.Log.DebugFormat("Starting MAL request to {0}", request.RequestUri);
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                try
                 {
-                    Logging.Log.DebugFormat("Got response. Status code = {0}.", response.StatusCode);
-                    if (response.StatusCode != HttpStatusCode.OK)
+                    using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                     {
-                        throw new MalApiRequestException(string.Format("{0} Status code was {1}.", baseErrorMessage, response.StatusCode));
+                        Logging.Log.DebugFormat("Got response. Status code = {0}.", response.StatusCode);
+                        if (response.StatusCode != HttpStatusCode.OK)
+                        {
+                            throw new MalApiRequestException(string.Format("{0} Status code was {1}.", baseErrorMessage, response.StatusCode));
+                        }
+
+                        using (Stream responseBodyStream = response.GetResponseStream())
+                        using (StreamReader responseBodyReader = new StreamReader(responseBodyStream, Encoding.UTF8))
+                        {
+                            // XXX: Shouldn't be hardcoding UTF-8
+                            responseBody = responseBodyReader.ReadToEnd();
+                        }
+                    }
+                }
+                catch (WebException ex)
+                {
+                    if (httpErrorStatusHandler == null)
+                    {
+                        throw;
                     }
 
-                    using (Stream responseBodyStream = response.GetResponseStream())
-                    using (StreamReader responseBodyReader = new StreamReader(responseBodyStream, Encoding.UTF8))
+                    bool handled;
+                    TReturn result = httpErrorStatusHandler(ex, data, out handled);
+                    
+                    // If the handler did not know what to do with the http error, rethrow the exception
+                    if (!handled)
                     {
-                        // XXX: Shouldn't be hardcoding UTF-8
-                        responseBody = responseBodyReader.ReadToEnd();
+                        throw;
                     }
+
+                    // If it did know what to do and returned a result, return that result
+                    return result;
+
+                    // If it did know what to do and threw a better exception, it will get caught below and thrown further.
                 }
 
                 Logging.Log.Debug("Read response body.");
@@ -200,7 +239,7 @@ namespace MalApi
 
         private static readonly string AnimeDetailsUrlFormat = "http://myanimelist.net/anime/{0}";
         private static readonly string GenreIDRegex = "/genre/(?<genreID>[0-9]+)";
-
+        
         /// <summary>
         /// Gets information from an anime's "details" page. This method uses HTML scraping and so may break if MAL changes the HTML.
         /// </summary>
@@ -211,20 +250,30 @@ namespace MalApi
             string url = string.Format(AnimeDetailsUrlFormat, animeId);
             Logging.Log.InfoFormat("Getting anime details from {0}.", url);
             HttpWebRequest request = InitNewRequest(url, "GET");
-            AnimeDetailsResults results = ProcessRequest(request, ScrapeAnimeDetailsFromHtml, animeId,
+            AnimeDetailsResults results = ProcessRequest(request, ScrapeAnimeDetailsFromHtml, animeId, httpErrorStatusHandler: GetAnimeDetailsHttpErrorStatusHandler,
                 baseErrorMessage: string.Format("Failed getting anime details for anime ID {0}.", animeId));
             Logging.Log.InfoFormat("Successfully got details from {0}.", url);
             return results;
         }
 
-        // internal for unit testing
-        internal AnimeDetailsResults ScrapeAnimeDetailsFromHtml(string animeDetailsHtml, int animeId)
+        // If getting anime details page returned a 404, throw a MalAnimeNotFound exception instead of letting
+        // a generic MalApiException be thrown.
+        private static AnimeDetailsResults GetAnimeDetailsHttpErrorStatusHandler(WebException ex, int animeId, out bool handled)
         {
-            if (animeDetailsHtml.Contains("<div class=\"badresult\">No series found, check the series id and try again.</div>"))
+            if (ex.Response != null && ex.Response is HttpWebResponse && ((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.NotFound)
             {
                 throw new MalAnimeNotFoundException(string.Format("No anime with id {0} exists.", animeId));
             }
+            else
+            {
+                handled = false;
+                return null;
+            }
+        }
 
+        // internal for unit testing
+        internal AnimeDetailsResults ScrapeAnimeDetailsFromHtml(string animeDetailsHtml, int animeId)
+        {
             //Create a HtmlDocument, load the page into it and extract the all genre nodes
             HtmlDocument htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(animeDetailsHtml);
