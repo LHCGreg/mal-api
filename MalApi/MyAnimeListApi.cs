@@ -17,8 +17,8 @@ namespace MalApi
     /// </summary>
     public class MyAnimeListApi : IMyAnimeListApi
     {
-        private const string MalAppInfoUri = "http://myanimelist.net/malappinfo.php?status=all&type=anime";
-        private const string RecentOnlineUsersUri = "http://myanimelist.net/users.php";
+        private const string MalAppInfoUri = "https://myanimelist.net/malappinfo.php?status=all&type=anime";
+        private const string RecentOnlineUsersUri = "https://myanimelist.net/users.php";
 
         /// <summary>
         /// What to set the user agent http header to in API requests. Null to use the default .NET user agent.
@@ -247,7 +247,7 @@ namespace MalApi
             return new RecentUsersResults(users);
         }
 
-        private static readonly string AnimeDetailsUrlFormat = "http://myanimelist.net/anime/{0}";
+        private static readonly string AnimeDetailsUrlFormat = "https://myanimelist.net/anime/{0}";
         private static readonly string GenreIDRegex = "/genre/(?<genreID>[0-9]+)";
         
         /// <summary>
