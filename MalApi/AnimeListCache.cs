@@ -14,7 +14,7 @@ namespace MalApi
     internal class AnimeListCache : IDisposable
     {
         private Dictionary<string, MalUserLookupResults> m_animeListCache =
-            new Dictionary<string, MalUserLookupResults>(StringComparer.InvariantCultureIgnoreCase);
+            new Dictionary<string, MalUserLookupResults>(StringComparer.OrdinalIgnoreCase);
         private LinkedList<Tuple<string, DateTime>> m_cachePutTimesSortedByTime;
         private Dictionary<string, LinkedListNode<Tuple<string, DateTime>>> m_cachePutTimesByName;
         private TimeSpan? m_expiration;
@@ -27,7 +27,7 @@ namespace MalApi
             if (m_expiration != null)
             {
                 m_cachePutTimesSortedByTime = new LinkedList<Tuple<string, DateTime>>();
-                m_cachePutTimesByName = new Dictionary<string, LinkedListNode<Tuple<string, DateTime>>>(StringComparer.InvariantCultureIgnoreCase);
+                m_cachePutTimesByName = new Dictionary<string, LinkedListNode<Tuple<string, DateTime>>>(StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -50,10 +50,8 @@ namespace MalApi
                     }
                 }
 
-                LinkedListNode<Tuple<string, DateTime>> userAndTimeInsertedNode;
-
                 // Check if this user is in the cache and if the cache entry is not stale
-                if (m_cachePutTimesByName.TryGetValue(user, out userAndTimeInsertedNode))
+                if (m_cachePutTimesByName.TryGetValue(user, out LinkedListNode<Tuple<string, DateTime>> userAndTimeInsertedNode))
                 {
                     DateTime expirationTime = userAndTimeInsertedNode.Value.Item2 + m_expiration.Value;
                     if (DateTime.UtcNow < expirationTime)
@@ -91,8 +89,7 @@ namespace MalApi
                     return;
                 }
 
-                LinkedListNode<Tuple<string, DateTime>> nodeForLastInsert;
-                if (m_cachePutTimesByName.TryGetValue(user, out nodeForLastInsert))
+                if (m_cachePutTimesByName.TryGetValue(user, out LinkedListNode<Tuple<string, DateTime>> nodeForLastInsert))
                 {
                     m_cachePutTimesSortedByTime.Remove(nodeForLastInsert);
                 }
@@ -130,7 +127,7 @@ namespace MalApi
 }
 
 /*
- Copyright 2011 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

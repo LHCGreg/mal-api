@@ -3,24 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using MalApi;
-using System.Threading;
 
-namespace MalApi.Tests
+namespace MalApi.IntegrationTests
 {
     [TestFixture]
-    public class AnimeListCacheTests
+    public class GetRecentOnlineUsersTest
     {
         [Test]
-        public void TestCacheCaseInsensitivity()
+        public void GetRecentOnlineUsers()
         {
-            using (AnimeListCache cache = new AnimeListCache(expiration: TimeSpan.FromHours(5)))
+            using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                cache.PutListForUser("a", new MalUserLookupResults(userId: 5, canonicalUserName: "A", animeList: new List<MyAnimeListEntry>()));
-                
-                MalUserLookupResults lookup;
-                cache.GetListForUser("A", out lookup);
-                Assert.That(lookup.UserId, Is.EqualTo(5));
+                RecentUsersResults results = api.GetRecentOnlineUsers();
+                Assert.That(results.RecentUsers.Count, Is.GreaterThan(0));
             }
         }
     }

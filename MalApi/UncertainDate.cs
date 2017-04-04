@@ -132,8 +132,8 @@ namespace MalApi
         /// <param></param>
         public DateTime? ToDateTime()
         {
-            if(Year != null && Month != null && Day != null)
-                return new DateTime((int) Year, (int) Month, (int) Day);
+            if (Year != null && Month != null && Day != null)
+                return new DateTime((int)Year, (int)Month, (int)Day);
 
             return null;
         }

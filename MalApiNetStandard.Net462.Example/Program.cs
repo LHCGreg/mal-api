@@ -1,9 +1,11 @@
-﻿using System;
+﻿using MalApi;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace MalApi.Example
+namespace MalApiNetStandard.Net462.Example
 {
     class Program
     {

@@ -5,7 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using MalApi;
 
-namespace MalApi.Integration
+namespace MalApi.IntegrationTests
 {
     [TestFixture]
     public class GetAnimeListForUserTest

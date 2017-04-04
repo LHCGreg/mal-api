@@ -8,21 +8,16 @@ namespace MalApi
     /// <summary>
     /// Generic exception for errors 
     /// </summary>
-    [Serializable]
     public class MalApiException : Exception
     {
         public MalApiException() { }
         public MalApiException(string message) : base(message) { }
         public MalApiException(string message, Exception inner) : base(message, inner) { }
-        protected MalApiException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
     }
 }
 
 /*
- Copyright 2011 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

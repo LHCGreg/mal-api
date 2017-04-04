@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MalApi
 {
@@ -42,7 +43,7 @@ namespace MalApi
                     if (numTries < m_numTriesBeforeGivingUp)
                     {
                         Logging.Log.InfoFormat("Waiting {0} ms before trying again.", m_timeBetweenRetriesInMs);
-                        Thread.Sleep(m_timeBetweenRetriesInMs);
+                        Task.Delay(m_timeBetweenRetriesInMs).RunSynchronously();
                     }
                     else
                     {

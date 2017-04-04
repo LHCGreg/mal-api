@@ -30,8 +30,7 @@ namespace MalApi
         {
             Logging.Log.InfoFormat("Checking cache for user {0}.", user);
 
-            MalUserLookupResults animeList;
-            if (m_cache.GetListForUser(user, out animeList))
+            if (m_cache.GetListForUser(user, out MalUserLookupResults animeList))
             {
                 if (animeList != null)
                 {

@@ -8,7 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
 using System.Globalization;
-using HtmlAgilityPack;
+using System.Net.Http;
 
 namespace MalApi
 {
@@ -35,38 +35,45 @@ namespace MalApi
         /// </summary>
         public string MalApiKey { get { return UserAgent; } set { UserAgent = value; } }
 
-        private int m_timeoutInMs = 15 * 1000;
-
         /// <summary>
         /// Timeout in milliseconds for requests to MAL. Defaults to 15000 (15s).
         /// </summary>
-        public int TimeoutInMs { get { return m_timeoutInMs; } set { m_timeoutInMs = value; } }
+        public int TimeoutInMs
+        {
+            get { return m_httpClient.Timeout.Milliseconds; }
+            set { m_httpClient.Timeout = TimeSpan.FromMilliseconds(value); }
+        }
+
+        private HttpClientHandler m_httpHandler;
+        private HttpClient m_httpClient;
 
         public MyAnimeListApi()
         {
-            ;
+            m_httpHandler = new HttpClientHandler()
+            {
+                AllowAutoRedirect = true,
+                UseCookies = false,
+
+                // Very important optimization! Time to get an anime list of ~150 entries 2.6s -> 0.7s
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+            };
+            m_httpClient = new HttpClient(m_httpHandler);
+            TimeoutInMs = 15 * 1000;
         }
 
-        private HttpWebRequest InitNewRequest(string uri, string method)
+        private HttpRequestMessage InitNewRequest(string uri, HttpMethod method)
         {
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(uri);
+            HttpRequestMessage request = new HttpRequestMessage(method, uri);
 
             if (UserAgent != null)
             {
-                request.UserAgent = UserAgent;
+                request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
             }
-            request.Timeout = TimeoutInMs;
-            request.ReadWriteTimeout = TimeoutInMs;
-            request.Method = method;
-            request.KeepAlive = false;
-
-            // Very important optimization! Time to get an anime list of ~150 entries 2.6s -> 0.7s
-            request.AutomaticDecompression = DecompressionMethods.GZip;
 
             return request;
         }
 
-        private TReturn ProcessRequest<TReturn>(HttpWebRequest request, Func<string, TReturn> processingFunc, string baseErrorMessage)
+        private TReturn ProcessRequest<TReturn>(HttpRequestMessage request, Func<string, TReturn> processingFunc, string baseErrorMessage)
         {
             return ProcessRequest(request, (string html, object dummy) => processingFunc(html), (object)null,
                 httpErrorStatusHandler: null, baseErrorMessage: baseErrorMessage);
@@ -80,61 +87,48 @@ namespace MalApi
         /// </summary>
         /// <typeparam name="TData"></typeparam>
         /// <typeparam name="TReturn"></typeparam>
-        /// <param name="ex"></param>
+        /// <param name="response"></param>
         /// <param name="data"></param>
         /// <param name="handled"></param>
         /// <returns></returns>
-        delegate TReturn HttpErrorStatusHandler<TData, TReturn>(WebException ex, TData data, out bool handled);
+        delegate TReturn HttpErrorStatusHandler<TData, TReturn>(HttpResponseMessage response, TData data, out bool handled);
 
-        private TReturn ProcessRequest<TReturn, TData>(HttpWebRequest request, Func<string, TData, TReturn> processingFunc, TData data, HttpErrorStatusHandler<TData, TReturn> httpErrorStatusHandler, string baseErrorMessage)
+        private TReturn ProcessRequest<TReturn, TData>(HttpRequestMessage request, Func<string, TData, TReturn> processingFunc, TData data, HttpErrorStatusHandler<TData, TReturn> httpErrorStatusHandler, string baseErrorMessage)
         {
             string responseBody = null;
             try
             {
                 Logging.Log.DebugFormat("Starting MAL request to {0}", request.RequestUri);
-                try
+                using (HttpResponseMessage response = m_httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
                 {
-                    using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                    Logging.Log.DebugFormat("Got response. Status code = {0}.", (int)response.StatusCode);
+
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        Logging.Log.DebugFormat("Got response. Status code = {0}.", response.StatusCode);
-                        if (response.StatusCode != HttpStatusCode.OK)
+                        responseBody = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        Logging.Log.Debug("Read response body.");
+                        return processingFunc(responseBody, data);
+                    }
+                    else
+                    {
+                        if (httpErrorStatusHandler != null)
                         {
-                            throw new MalApiRequestException(string.Format("{0} Status code was {1}.", baseErrorMessage, response.StatusCode));
+                            TReturn result = httpErrorStatusHandler(response, data, out bool handled);
+
+                            // If the handler knew what to do and returned a result, return that result
+                            if (handled)
+                            {
+                                return result;
+                            }
+
+                            // If the handler knew what to do and threw a better exception, it will get caught below and thrown further.
                         }
 
-                        using (Stream responseBodyStream = response.GetResponseStream())
-                        using (StreamReader responseBodyReader = new StreamReader(responseBodyStream, Encoding.UTF8))
-                        {
-                            // XXX: Shouldn't be hardcoding UTF-8
-                            responseBody = responseBodyReader.ReadToEnd();
-                        }
+                        // If there was a handler and it did not know what to do with the http error,
+                        // or if no handler was passed, throw an exception.
+                        throw new MalApiRequestException(string.Format("{0} Status code was {1}", baseErrorMessage, (int)response.StatusCode));
                     }
                 }
-                catch (WebException ex)
-                {
-                    if (httpErrorStatusHandler == null)
-                    {
-                        throw;
-                    }
-
-                    bool handled;
-                    TReturn result = httpErrorStatusHandler(ex, data, out handled);
-                    
-                    // If the handler did not know what to do with the http error, rethrow the exception
-                    if (!handled)
-                    {
-                        throw;
-                    }
-
-                    // If it did know what to do and returned a result, return that result
-                    return result;
-
-                    // If it did know what to do and threw a better exception, it will get caught below and thrown further.
-                }
-
-                Logging.Log.Debug("Read response body.");
-
-                return processingFunc(responseBody, data);
             }
             catch (MalUserNotFoundException)
             {
@@ -183,8 +177,6 @@ namespace MalApi
 
             Logging.Log.InfoFormat("Getting anime list for MAL user {0} using URI {1}", user, userInfoUri);
 
-            HttpWebRequest request = InitNewRequest(userInfoUri, "GET");
-
             Func<string, MalUserLookupResults> responseProcessingFunc = (xml) =>
             {
                 using (TextReader xmlTextReader = new StringReader(xml))
@@ -199,6 +191,8 @@ namespace MalApi
                     }
                 }
             };
+
+            HttpRequestMessage request = InitNewRequest(userInfoUri, HttpMethod.Get);
             MalUserLookupResults parsedList = ProcessRequest(request, responseProcessingFunc,
                 baseErrorMessage: string.Format("Failed getting anime list for user {0} using url {1}", user, userInfoUri));
 
@@ -220,8 +214,7 @@ namespace MalApi
         {
             Logging.Log.InfoFormat("Getting list of recent online MAL users using URI {0}", RecentOnlineUsersUri);
 
-            HttpWebRequest request = InitNewRequest(RecentOnlineUsersUri, "GET");
-
+            HttpRequestMessage request = InitNewRequest(RecentOnlineUsersUri, HttpMethod.Get);
             RecentUsersResults recentUsers = ProcessRequest(request, ScrapeUsersFromHtml,
                 baseErrorMessage: "Failed getting list of recent MAL users.");
 
@@ -248,8 +241,10 @@ namespace MalApi
         }
 
         private static readonly string AnimeDetailsUrlFormat = "https://myanimelist.net/anime/{0}";
-        private static readonly string GenreIDRegex = "/genre/(?<genreID>[0-9]+)";
-        
+        private static Lazy<Regex> s_animeDetailsRegex = new Lazy<Regex>(() => new Regex(
+@"Genres:</span>\s*?(?:<a href=""/anime/genre/(?<GenreId>\d+)/[^""]+?""[^>]*?>(?<GenreName>.*?)</a>(?:, )?)*</div>",
+RegexOptions.Compiled));
+        private static Regex AnimeDetailsRegex { get { return s_animeDetailsRegex.Value; } }
         /// <summary>
         /// Gets information from an anime's "details" page. This method uses HTML scraping and so may break if MAL changes the HTML.
         /// This method does not require a MAL API key.
@@ -260,7 +255,8 @@ namespace MalApi
         {
             string url = string.Format(AnimeDetailsUrlFormat, animeId);
             Logging.Log.InfoFormat("Getting anime details from {0}.", url);
-            HttpWebRequest request = InitNewRequest(url, "GET");
+
+            HttpRequestMessage request = InitNewRequest(url, HttpMethod.Get);
             AnimeDetailsResults results = ProcessRequest(request, ScrapeAnimeDetailsFromHtml, animeId, httpErrorStatusHandler: GetAnimeDetailsHttpErrorStatusHandler,
                 baseErrorMessage: string.Format("Failed getting anime details for anime ID {0}.", animeId));
             Logging.Log.InfoFormat("Successfully got details from {0}.", url);
@@ -269,9 +265,9 @@ namespace MalApi
 
         // If getting anime details page returned a 404, throw a MalAnimeNotFound exception instead of letting
         // a generic MalApiException be thrown.
-        private static AnimeDetailsResults GetAnimeDetailsHttpErrorStatusHandler(WebException ex, int animeId, out bool handled)
+        private static AnimeDetailsResults GetAnimeDetailsHttpErrorStatusHandler(HttpResponseMessage response, int animeId, out bool handled)
         {
-            if (ex.Response != null && ex.Response is HttpWebResponse && ((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.NotFound)
+            if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 throw new MalAnimeNotFoundException(string.Format("No anime with id {0} exists.", animeId));
             }
@@ -285,23 +281,21 @@ namespace MalApi
         // internal for unit testing
         internal AnimeDetailsResults ScrapeAnimeDetailsFromHtml(string animeDetailsHtml, int animeId)
         {
-            //Create a HtmlDocument, load the page into it and extract the all genre nodes
-            HtmlDocument htmlDoc = new HtmlDocument();
-            htmlDoc.LoadHtml(animeDetailsHtml);
-            HtmlNodeCollection nodeCollection = htmlDoc.DocumentNode.SelectNodes("//div/a[contains(@href, \"genre\")]/@href");
+            Match match = AnimeDetailsRegex.Match(animeDetailsHtml);
 
-            if (nodeCollection == null || nodeCollection.Count == 0)
+            if (!match.Success)
             {
                 throw new MalApiException(string.Format("Could not extract information from {0}.", string.Format(AnimeDetailsUrlFormat, animeId)));
             }
 
-            //Extract one genre per node
+            Group genreIds = match.Groups["GenreId"];
+            Group genreNames = match.Groups["GenreName"];
             List<Genre> genres = new List<Genre>();
-            foreach (HtmlNode node in nodeCollection)
+            for (int i = 0; i < genreIds.Captures.Count; i++)
             {
-                string genreIdString = Regex.Match(node.Attributes["href"].Value, GenreIDRegex).Groups["genreID"].Value;
+                string genreIdString = genreIds.Captures[i].Value;
                 int genreId = int.Parse(genreIdString);
-                string genreName = node.InnerText;
+                string genreName = WebUtility.HtmlDecode(genreNames.Captures[i].Value);
                 genres.Add(new Genre(genreId, genreName));
             }
 
@@ -310,13 +304,14 @@ namespace MalApi
 
         public void Dispose()
         {
-            ;
+            m_httpClient.Dispose();
+            m_httpHandler.Dispose();
         }
     }
 }
 
 /*
- Copyright 2016 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

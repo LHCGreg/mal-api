@@ -3,19 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using System.Reflection;
+using System.IO;
 
-namespace MalApi.Integration
+namespace MalApi.UnitTests
 {
     [TestFixture]
-    public class GetAnimeDetailsTest
+    public class MyAnimeListApiTests
     {
         [Test]
-        public void GetAnimeDetails()
+        public void TestScrapeAnimeDetailsFromHtml()
         {
-            int animeId = 237; // Eureka Seven
+            string thisAssemblyPath = typeof(MyAnimeListApiTests).GetTypeInfo().Assembly.CodeBase.Replace("file:///", "");
+            string htmlFilePath = Path.Combine(Path.GetDirectoryName(thisAssemblyPath), "Eureka_Seven.htm");
+            string html = File.ReadAllText(htmlFilePath);
+
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                AnimeDetailsResults results = api.GetAnimeDetails(animeId);
+                AnimeDetailsResults results = api.ScrapeAnimeDetailsFromHtml(html, 237);
                 List<Genre> expectedGenres = new List<Genre>()
                 {
                     new Genre(2, "Adventure"),
@@ -27,21 +32,11 @@ namespace MalApi.Integration
                 Assert.That(results.Genres, Is.EquivalentTo(expectedGenres));
             }
         }
-
-        [Test]
-        public void GetAnimeDetailsForInvalidAnimeId()
-        {
-            int animeId = 99999;
-            using (MyAnimeListApi api = new MyAnimeListApi())
-            {
-                Assert.Throws<MalAnimeNotFoundException>(() => api.GetAnimeDetails(animeId));
-            }
-        }
     }
 }
 
 /*
- Copyright 2016 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

@@ -3,25 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using System.Reflection;
-using System.IO;
 
-namespace MalApi.Tests
+namespace MalApi.IntegrationTests
 {
     [TestFixture]
-    public class MyAnimeListApiTests
+    public class GetAnimeDetailsTest
     {
         [Test]
-        public void TestScrapeAnimeDetailsFromHtml()
+        public void GetAnimeDetails()
         {
-            string thisAssemblyPath = Assembly.GetExecutingAssembly().CodeBase.Replace("file:///", "");
-            Console.WriteLine(thisAssemblyPath);
-            string htmlFilePath = Path.Combine(Path.GetDirectoryName(thisAssemblyPath), "Eureka_Seven.htm");
-            string html = File.ReadAllText(htmlFilePath);
-
+            int animeId = 237; // Eureka Seven
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                AnimeDetailsResults results = api.ScrapeAnimeDetailsFromHtml(html, 237);
+                AnimeDetailsResults results = api.GetAnimeDetails(animeId);
                 List<Genre> expectedGenres = new List<Genre>()
                 {
                     new Genre(2, "Adventure"),
@@ -31,6 +25,16 @@ namespace MalApi.Tests
                     new Genre(24, "Sci-Fi"),
                 };
                 Assert.That(results.Genres, Is.EquivalentTo(expectedGenres));
+            }
+        }
+
+        [Test]
+        public void GetAnimeDetailsForInvalidAnimeId()
+        {
+            int animeId = 99999;
+            using (MyAnimeListApi api = new MyAnimeListApi())
+            {
+                Assert.Throws<MalAnimeNotFoundException>(() => api.GetAnimeDetails(animeId));
             }
         }
     }

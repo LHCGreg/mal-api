@@ -1,0 +1,1 @@
+﻿No special setup is needed in order to run these tests. MAL seems to no longer require an API key.

@@ -1,9 +1,7 @@
 MalApi
-Copyright 2016 Greg Najda, licensed under the Apache License 2.0 (license.txt)
+Copyright 2017 Greg Najda, licensed under the Apache License 2.0 (license.txt)
 
 
 MalApi uses the following libraries:
 
 Common.Logging is copyright by the Common.Logging developers and is licensed under the Apache License 2.0.
-
-HTML Agility Pack (https://htmlagilitypack.codeplex.com/) is licensed under the Microsoft Public License.

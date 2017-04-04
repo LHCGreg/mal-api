@@ -1,0 +1,1 @@
+﻿This project is the .NET 4.5 build of MalApi. The MalApiNetStandard shares the same source files but targets netstandard and may reference different versions of libraries as needed in order to support that.

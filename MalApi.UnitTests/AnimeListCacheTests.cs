@@ -3,26 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using MalApi;
+using System.Threading;
 
-namespace MalApi.Integration
+namespace MalApi.UnitTests
 {
     [TestFixture]
-    public class GetRecentOnlineUsersTest
+    public class AnimeListCacheTests
     {
         [Test]
-        public void GetRecentOnlineUsers()
+        public void TestCacheCaseInsensitivity()
         {
-            using (MyAnimeListApi api = new MyAnimeListApi())
+            using (AnimeListCache cache = new AnimeListCache(expiration: TimeSpan.FromHours(5)))
             {
-                RecentUsersResults results = api.GetRecentOnlineUsers();
-                Assert.That(results.RecentUsers.Count, Is.GreaterThan(0));
+                cache.PutListForUser("a", new MalUserLookupResults(userId: 5, canonicalUserName: "A", animeList: new List<MyAnimeListEntry>()));
+                cache.GetListForUser("A", out MalUserLookupResults lookup);
+                Assert.That(lookup.UserId, Is.EqualTo(5));
             }
         }
     }
 }
 
 /*
- Copyright 2012 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

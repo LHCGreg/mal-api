@@ -40,7 +40,7 @@ namespace MalApi
                     {
                         TimeSpan timeToWait = TimeBetweenRequests - timeSinceLastRequest;
                         Logging.Log.InfoFormat("Waiting {0} before making request.", timeToWait);
-                        Thread.Sleep(timeToWait);
+                        System.Threading.Tasks.Task.Delay(timeToWait).RunSynchronously();
                     }
                 }
             }

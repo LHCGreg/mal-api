@@ -8,21 +8,16 @@ namespace MalApi
     /// <summary>
     /// Thrown when there is an error communicating with MAL.
     /// </summary>
-    [Serializable]
     public class MalApiRequestException : MalApiException
     {
         public MalApiRequestException() { }
         public MalApiRequestException(string message) : base(message) { }
         public MalApiRequestException(string message, Exception inner) : base(message, inner) { }
-        protected MalApiRequestException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
     }
 }
 
 /*
- Copyright 2011 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

@@ -6,7 +6,7 @@ using NUnit.Framework;
 using System.IO;
 using System.Xml.Linq;
 
-namespace MalApi.Tests
+namespace MalApi.UnitTests
 {
     [TestFixture]
     public partial class MalAppInfoXmlTests

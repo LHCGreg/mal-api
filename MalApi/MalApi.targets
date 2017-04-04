@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="PrepareForPackage" DependsOnTargets="Build">
     <Message Text="Copying output to package staging area." />
-    <Copy SourceFiles="$(OutputPath)MalApi.dll;$(OutputPath)MalApi.xml" DestinationFolder="package/lib/net40" />
+    <Copy SourceFiles="$(OutputPath)MalApi.dll;$(OutputPath)MalApi.xml" DestinationFolder="package/lib/net45" />
     <Copy SourceFiles="../license.txt;../notice.txt" DestinationFolder="package" />
   </Target>
 
@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <Packages Include="$(OutputPath)*.nupkg" />
-    <PackageStagingFiles Include="package/lib/net40/*" />
+    <PackageStagingFiles Include="package/lib/net45/*" />
   </ItemGroup>
 
   <Target Name="CleanPackage">

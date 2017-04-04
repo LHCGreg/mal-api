@@ -8,21 +8,16 @@ namespace MalApi
     /// <summary>
     /// Indicates that the anime that was searched for does not exist.
     /// </summary>
-    [Serializable]
     public class MalAnimeNotFoundException : MalApiException
     {
         public MalAnimeNotFoundException() { }
         public MalAnimeNotFoundException(string message) : base(message) { }
         public MalAnimeNotFoundException(string message, Exception inner) : base(message, inner) { }
-        protected MalAnimeNotFoundException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
     }
 }
 
 /*
- Copyright 2012 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
