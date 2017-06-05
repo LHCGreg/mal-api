@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.IO;
-using System.Xml;
-using System.Xml.Linq;
 using System.Text.RegularExpressions;
-using System.Globalization;
 using System.Net.Http;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace MalApi
 {
@@ -73,10 +72,10 @@ namespace MalApi
             return request;
         }
 
-        private TReturn ProcessRequest<TReturn>(HttpRequestMessage request, Func<string, TReturn> processingFunc, string baseErrorMessage)
+        private Task<TReturn> ProcessRequestAsync<TReturn>(HttpRequestMessage request, Func<string, TReturn> processingFunc, string baseErrorMessage, CancellationToken cancellationToken)
         {
-            return ProcessRequest(request, (string html, object dummy) => processingFunc(html), (object)null,
-                httpErrorStatusHandler: null, baseErrorMessage: baseErrorMessage);
+            return ProcessRequestAsync(request, (string html, object dummy) => processingFunc(html), (object)null,
+                httpErrorStatusHandler: null, baseErrorMessage: baseErrorMessage, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -93,19 +92,21 @@ namespace MalApi
         /// <returns></returns>
         delegate TReturn HttpErrorStatusHandler<TData, TReturn>(HttpResponseMessage response, TData data, out bool handled);
 
-        private TReturn ProcessRequest<TReturn, TData>(HttpRequestMessage request, Func<string, TData, TReturn> processingFunc, TData data, HttpErrorStatusHandler<TData, TReturn> httpErrorStatusHandler, string baseErrorMessage)
+        private async Task<TReturn> ProcessRequestAsync<TReturn, TData>(HttpRequestMessage request, Func<string, TData, TReturn> processingFunc, TData data, HttpErrorStatusHandler<TData, TReturn> httpErrorStatusHandler, string baseErrorMessage, CancellationToken cancellationToken)
         {
             string responseBody = null;
             try
             {
                 Logging.Log.DebugFormat("Starting MAL request to {0}", request.RequestUri);
-                using (HttpResponseMessage response = m_httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
+
+                // Need to read the entire content at once here because response.Content.ReadAsStringAsync doesn't support cancellation.
+                using (HttpResponseMessage response = await m_httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(continueOnCapturedContext: false))
                 {
                     Logging.Log.DebugFormat("Got response. Status code = {0}.", (int)response.StatusCode);
 
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        responseBody = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
                         Logging.Log.Debug("Read response body.");
                         return processingFunc(responseBody, data);
                     }
@@ -171,7 +172,20 @@ namespace MalApi
         /// <returns></returns>
         /// <exception cref="MalApi.MalUserNotFoundException"></exception>
         /// <exception cref="MalApi.MalApiException"></exception>
-        public MalUserLookupResults GetAnimeListForUser(string user)
+        public Task<MalUserLookupResults> GetAnimeListForUserAsync(string user)
+        {
+            return GetAnimeListForUserAsync(user, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets a user's anime list. This method requires a MAL API key.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="MalApi.MalUserNotFoundException"></exception>
+        /// <exception cref="MalApi.MalApiException"></exception>
+        public async Task<MalUserLookupResults> GetAnimeListForUserAsync(string user, CancellationToken cancellationToken)
         {
             string userInfoUri = MalAppInfoUri + "&u=" + Uri.EscapeDataString(user);
 
@@ -193,11 +207,23 @@ namespace MalApi
             };
 
             HttpRequestMessage request = InitNewRequest(userInfoUri, HttpMethod.Get);
-            MalUserLookupResults parsedList = ProcessRequest(request, responseProcessingFunc,
-                baseErrorMessage: string.Format("Failed getting anime list for user {0} using url {1}", user, userInfoUri));
+            MalUserLookupResults parsedList = await ProcessRequestAsync(request, responseProcessingFunc, cancellationToken: cancellationToken,
+    baseErrorMessage: string.Format("Failed getting anime list for user {0} using url {1}", user, userInfoUri)).ConfigureAwait(continueOnCapturedContext: false);
 
             Logging.Log.InfoFormat("Successfully retrieved anime list for user {0}", user);
             return parsedList;
+        }
+
+        /// <summary>
+        /// Gets a user's anime list. This method requires a MAL API key.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// <exception cref="MalApi.MalUserNotFoundException"></exception>
+        /// <exception cref="MalApi.MalApiException"></exception>
+        public MalUserLookupResults GetAnimeListForUser(string user)
+        {
+            return GetAnimeListForUserAsync(user).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
         }
 
         private static Lazy<Regex> s_recentOnlineUsersRegex =
@@ -205,21 +231,40 @@ namespace MalApi
                 RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase));
         public static Regex RecentOnlineUsersRegex { get { return s_recentOnlineUsersRegex.Value; } }
 
+        public Task<RecentUsersResults> GetRecentOnlineUsersAsync()
+        {
+            return GetRecentOnlineUsersAsync(CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets a list of users that have been on MAL recently. This scrapes the HTML on the recent users page and therefore
+        /// can break if MAL changes the HTML on that page. This method does not require a MAL API key.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="MalApi.MalApiException"></exception>
+        public async Task<RecentUsersResults> GetRecentOnlineUsersAsync(CancellationToken cancellationToken)
+        {
+            Logging.Log.InfoFormat("Getting list of recent online MAL users using URI {0}", RecentOnlineUsersUri);
+
+            HttpRequestMessage request = InitNewRequest(RecentOnlineUsersUri, HttpMethod.Get);
+            RecentUsersResults recentUsers = await ProcessRequestAsync(request, ScrapeUsersFromHtml,
+                baseErrorMessage: "Failed getting list of recent MAL users.", cancellationToken: cancellationToken)
+                .ConfigureAwait(continueOnCapturedContext: false);
+
+            Logging.Log.Info("Successfully got list of recent online MAL users.");
+            return recentUsers;
+        }
+
         /// <summary>
         /// Gets a list of users that have been on MAL recently. This scrapes the HTML on the recent users page and therefore
         /// can break if MAL changes the HTML on that page. This method does not require a MAL API key.
         /// </summary>
         /// <returns></returns>
+        /// <exception cref="MalApi.MalApiException"></exception>
         public RecentUsersResults GetRecentOnlineUsers()
         {
-            Logging.Log.InfoFormat("Getting list of recent online MAL users using URI {0}", RecentOnlineUsersUri);
-
-            HttpRequestMessage request = InitNewRequest(RecentOnlineUsersUri, HttpMethod.Get);
-            RecentUsersResults recentUsers = ProcessRequest(request, ScrapeUsersFromHtml,
-                baseErrorMessage: "Failed getting list of recent MAL users.");
-
-            Logging.Log.Info("Successfully got list of recent online MAL users.");
-            return recentUsers;
+            return GetRecentOnlineUsersAsync().ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
         }
 
         private RecentUsersResults ScrapeUsersFromHtml(string recentUsersHtml)
@@ -245,22 +290,51 @@ namespace MalApi
 @"Genres:</span>\s*?(?:<a href=""/anime/genre/(?<GenreId>\d+)/[^""]+?""[^>]*?>(?<GenreName>.*?)</a>(?:, )?)*</div>",
 RegexOptions.Compiled));
         private static Regex AnimeDetailsRegex { get { return s_animeDetailsRegex.Value; } }
+
         /// <summary>
         /// Gets information from an anime's "details" page. This method uses HTML scraping and so may break if MAL changes the HTML.
         /// This method does not require a MAL API key.
         /// </summary>
         /// <param name="animeId"></param>
         /// <returns></returns>
-        public AnimeDetailsResults GetAnimeDetails(int animeId)
+        /// <exception cref="MalApi.MalApiException"></exception>
+        public Task<AnimeDetailsResults> GetAnimeDetailsAsync(int animeId)
+        {
+            return GetAnimeDetailsAsync(animeId, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Gets information from an anime's "details" page. This method uses HTML scraping and so may break if MAL changes the HTML.
+        /// This method does not require a MAL API key.
+        /// </summary>
+        /// <param name="animeId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="MalApi.MalApiException"></exception>
+        public async Task<AnimeDetailsResults> GetAnimeDetailsAsync(int animeId, CancellationToken cancellationToken)
         {
             string url = string.Format(AnimeDetailsUrlFormat, animeId);
             Logging.Log.InfoFormat("Getting anime details from {0}.", url);
 
             HttpRequestMessage request = InitNewRequest(url, HttpMethod.Get);
-            AnimeDetailsResults results = ProcessRequest(request, ScrapeAnimeDetailsFromHtml, animeId, httpErrorStatusHandler: GetAnimeDetailsHttpErrorStatusHandler,
-                baseErrorMessage: string.Format("Failed getting anime details for anime ID {0}.", animeId));
+            AnimeDetailsResults results = await ProcessRequestAsync(request, ScrapeAnimeDetailsFromHtml, animeId,
+                httpErrorStatusHandler: GetAnimeDetailsHttpErrorStatusHandler, cancellationToken: cancellationToken,
+                baseErrorMessage: string.Format("Failed getting anime details for anime ID {0}.", animeId))
+                .ConfigureAwait(continueOnCapturedContext: false);
             Logging.Log.InfoFormat("Successfully got details from {0}.", url);
             return results;
+        }
+
+        /// <summary>
+        /// Gets information from an anime's "details" page. This method uses HTML scraping and so may break if MAL changes the HTML.
+        /// This method does not require a MAL API key.
+        /// </summary>
+        /// <param name="animeId"></param>
+        /// <returns></returns>
+        /// <exception cref="MalApi.MalApiException"></exception>
+        public AnimeDetailsResults GetAnimeDetails(int animeId)
+        {
+            return GetAnimeDetailsAsync(animeId).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
         }
 
         // If getting anime details page returned a 404, throw a MalAnimeNotFound exception instead of letting

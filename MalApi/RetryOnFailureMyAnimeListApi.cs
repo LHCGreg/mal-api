@@ -26,14 +26,14 @@ namespace MalApi
             m_ownApi = ownApi;
         }
 
-        private TResult DoActionWithRetry<TResult>(Func<TResult> action, string baseErrorMessage)
+        private async Task<TResult> DoActionWithRetryAsync<TResult>(Func<Task<TResult>> asyncAction, string baseErrorMessage)
         {
             int numTries = 0;
             while (true)
             {
                 try
                 {
-                    return action();
+                    return await asyncAction().ConfigureAwait(continueOnCapturedContext: false);
                 }
                 catch (MalApiRequestException ex)
                 {
@@ -43,7 +43,7 @@ namespace MalApi
                     if (numTries < m_numTriesBeforeGivingUp)
                     {
                         Logging.Log.InfoFormat("Waiting {0} ms before trying again.", m_timeBetweenRetriesInMs);
-                        Task.Delay(m_timeBetweenRetriesInMs).RunSynchronously();
+                        await Task.Delay(m_timeBetweenRetriesInMs).ConfigureAwait(continueOnCapturedContext: false);
                     }
                     else
                     {
@@ -53,22 +53,52 @@ namespace MalApi
             }
         }
 
+        public Task<MalUserLookupResults> GetAnimeListForUserAsync(string user, CancellationToken cancellationToken)
+        {
+            return DoActionWithRetryAsync(() => m_underlyingApi.GetAnimeListForUserAsync(user, cancellationToken),
+                baseErrorMessage: string.Format("Error getting anime list for user {0}", user));
+        }
+
+        public Task<MalUserLookupResults> GetAnimeListForUserAsync(string user)
+        {
+            return GetAnimeListForUserAsync(user, CancellationToken.None);
+        }
+
         public MalUserLookupResults GetAnimeListForUser(string user)
         {
-            return DoActionWithRetry(() => m_underlyingApi.GetAnimeListForUser(user),
-                baseErrorMessage: string.Format("Error getting anime list for user {0}", user));
+            return GetAnimeListForUserAsync(user).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+        }
+
+        public Task<RecentUsersResults> GetRecentOnlineUsersAsync(CancellationToken cancellationToken)
+        {
+            return DoActionWithRetryAsync(() => m_underlyingApi.GetRecentOnlineUsersAsync(cancellationToken),
+                baseErrorMessage: "Error getting recently active MAL users");
+        }
+
+        public Task<RecentUsersResults> GetRecentOnlineUsersAsync()
+        {
+            return GetRecentOnlineUsersAsync(CancellationToken.None);
         }
 
         public RecentUsersResults GetRecentOnlineUsers()
         {
-            return DoActionWithRetry(() => m_underlyingApi.GetRecentOnlineUsers(),
-                baseErrorMessage: "Error getting recently active MAL users");
+            return GetRecentOnlineUsersAsync().ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+        }
+
+        public Task<AnimeDetailsResults> GetAnimeDetailsAsync(int animeId, CancellationToken cancellationToken)
+        {
+            return DoActionWithRetryAsync(() => m_underlyingApi.GetAnimeDetailsAsync(animeId, cancellationToken),
+                baseErrorMessage: string.Format("Error getting details for anime id {0}", animeId));
+        }
+
+        public Task<AnimeDetailsResults> GetAnimeDetailsAsync(int animeId)
+        {
+            return GetAnimeDetailsAsync(animeId, CancellationToken.None);
         }
 
         public AnimeDetailsResults GetAnimeDetails(int animeId)
         {
-            return DoActionWithRetry(() => m_underlyingApi.GetAnimeDetails(animeId),
-                baseErrorMessage: string.Format("Error getting details for anime id {0}", animeId));
+            return GetAnimeDetailsAsync(animeId).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
         }
 
         public void Dispose()
@@ -82,7 +112,7 @@ namespace MalApi
 }
 
 /*
- Copyright 2012 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

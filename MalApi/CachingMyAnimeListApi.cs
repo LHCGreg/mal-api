@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MalApi
 {
@@ -26,31 +27,38 @@ namespace MalApi
             m_cache = new AnimeListCache(expiration);
         }
 
-        public MalUserLookupResults GetAnimeListForUser(string user)
+        /// <summary>
+        /// Gets a user's anime list.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MalUserLookupResults> GetAnimeListForUserAsync(string user, CancellationToken cancellationToken)
         {
             Logging.Log.InfoFormat("Checking cache for user {0}.", user);
 
-            if (m_cache.GetListForUser(user, out MalUserLookupResults animeList))
+            if (m_cache.GetListForUser(user, out MalUserLookupResults cachedAnimeList))
             {
-                if (animeList != null)
+                if (cachedAnimeList != null)
                 {
-                    Logging.Log.Info("Got anime list from cache.");
-                    return animeList;
+                    Logging.Log.InfoFormat("Got anime list for {0} from cache.", user);
+                    return cachedAnimeList;
                 }
                 else
                 {
                     // User does not have an anime list/no such user exists
-                    Logging.Log.Info("Cache indicates that user does not have an anime list.");
+                    Logging.Log.InfoFormat("Cache indicates that user {0} does not have an anime list.", user);
                     throw new MalUserNotFoundException(string.Format("No MAL list exists for {0}.", user));
                 }
             }
             else
             {
-                Logging.Log.Info("Cache did not contain the anime list.");
+                Logging.Log.InfoFormat("Cache did not contain anime list for {0}.", user);
 
                 try
                 {
-                    animeList = m_underlyingApi.GetAnimeListForUser(user);
+                    MalUserLookupResults animeList = await m_underlyingApi.GetAnimeListForUserAsync(user, cancellationToken)
+                        .ConfigureAwait(continueOnCapturedContext: false);
                     m_cache.PutListForUser(user, animeList);
                     return animeList;
                 }
@@ -63,9 +71,39 @@ namespace MalApi
             }
         }
 
+        public Task<MalUserLookupResults> GetAnimeListForUserAsync(string user)
+        {
+            return GetAnimeListForUserAsync(user, CancellationToken.None);
+        }
+
+        public MalUserLookupResults GetAnimeListForUser(string user)
+        {
+            return GetAnimeListForUserAsync(user).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+        }
+
+        public Task<RecentUsersResults> GetRecentOnlineUsersAsync(CancellationToken cancellationToken)
+        {
+            return m_underlyingApi.GetRecentOnlineUsersAsync(cancellationToken);
+        }
+
+        public Task<RecentUsersResults> GetRecentOnlineUsersAsync()
+        {
+            return m_underlyingApi.GetRecentOnlineUsersAsync();
+        }
+
         public RecentUsersResults GetRecentOnlineUsers()
         {
             return m_underlyingApi.GetRecentOnlineUsers();
+        }
+
+        public Task<AnimeDetailsResults> GetAnimeDetailsAsync(int animeId, CancellationToken cancellationToken)
+        {
+            return m_underlyingApi.GetAnimeDetailsAsync(animeId, cancellationToken);
+        }
+
+        public Task<AnimeDetailsResults> GetAnimeDetailsAsync(int animeId)
+        {
+            return m_underlyingApi.GetAnimeDetailsAsync(animeId);
         }
 
         public AnimeDetailsResults GetAnimeDetails(int animeId)
@@ -85,7 +123,7 @@ namespace MalApi
 }
 
 /*
- Copyright 2011 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

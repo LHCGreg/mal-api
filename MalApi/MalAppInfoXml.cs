@@ -5,6 +5,8 @@ using System.Text;
 using System.IO;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace MalApi
 {
@@ -18,16 +20,44 @@ namespace MalApi
         /// <returns></returns>
         /// <exception cref="MalApi.MalUserNotFoundException"></exception>
         /// <exception cref="MalApi.MalApiException"></exception>
-        public static MalUserLookupResults Parse(TextReader xmlTextReader)
+        public static async Task<MalUserLookupResults> ParseAsync(TextReader xmlTextReader, CancellationToken cancellationToken)
         {
             Logging.Log.Trace("Sanitizing XML.");
-            using (xmlTextReader = SanitizeAnimeListXml(xmlTextReader))
+            using (StringReader sanitizedXmlTextReader = await SanitizeAnimeListXmlAsync(xmlTextReader, cancellationToken).ConfigureAwait(continueOnCapturedContext: false))
             {
                 Logging.Log.Trace("XML sanitized.");
 
-                XDocument doc = XDocument.Load(xmlTextReader);
+                // No async version of XDocument.Load in the full framework yet.
+                // StringReader won't block though.
+                XDocument doc = XDocument.Load(sanitizedXmlTextReader);
                 return Parse(doc);
             }
+        }
+
+        /// <summary>
+        /// Parses XML obtained from malappinfo.php. The XML is sanitized to account for MAL's invalid XML if, for example,
+        /// a user has a &amp; character in their tags.
+        /// </summary>
+        /// <param name="xmlTextReader"></param>
+        /// <returns></returns>
+        /// <exception cref="MalApi.MalUserNotFoundException"></exception>
+        /// <exception cref="MalApi.MalApiException"></exception>
+        public static Task<MalUserLookupResults> ParseAsync(TextReader xmlTextReader)
+        {
+            return ParseAsync(xmlTextReader, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Parses XML obtained from malappinfo.php. The XML is sanitized to account for MAL's invalid XML if, for example,
+        /// a user has a &amp; character in their tags.
+        /// </summary>
+        /// <param name="xmlTextReader"></param>
+        /// <returns></returns>
+        /// <exception cref="MalApi.MalUserNotFoundException"></exception>
+        /// <exception cref="MalApi.MalApiException"></exception>
+        public static MalUserLookupResults Parse(TextReader xmlTextReader)
+        {
+            return ParseAsync(xmlTextReader).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
         }
 
         // Rumor has it that compiled regexes are far more performant than non-compiled regexes on large pieces of text.
@@ -60,9 +90,9 @@ namespace MalApi
         /// </summary>
         /// <param name="xmlTextReader"></param>
         /// <returns></returns>
-        private static TextReader SanitizeAnimeListXml(TextReader xmlTextReader)
+        private static async Task<StringReader> SanitizeAnimeListXmlAsync(TextReader xmlTextReader, CancellationToken cancellationToken)
         {
-            string rawXml = xmlTextReader.ReadToEnd();
+            string rawXml = await xmlTextReader.ReadToEndAsync().ConfigureAwait(continueOnCapturedContext: false);
             string sanitizedXml = TagElementContentsRegex.Replace(rawXml, TagElementContentsReplacer);
             return new StringReader(sanitizedXml);
         }
