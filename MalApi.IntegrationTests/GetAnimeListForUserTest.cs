@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using MalApi;
+using System.Threading.Tasks;
 
 namespace MalApi.IntegrationTests
 {
@@ -22,11 +23,29 @@ namespace MalApi.IntegrationTests
                 Assert.That(userLookup.AnimeList, Is.Not.Empty);
             }
         }
+
+        [Test]
+        public void GetAnimeListForNonexistentUserThrowsCorrectException()
+        {
+            using (MyAnimeListApi api = new MyAnimeListApi())
+            {
+                Assert.Throws<MalUserNotFoundException>(() => api.GetAnimeListForUser("oijsfjisfdjfsdojpfsdp"));
+            }
+        }
+
+        [Test]
+        public void GetAnimeListForNonexistentUserThrowsCorrectExceptionAsync()
+        {
+            using (MyAnimeListApi api = new MyAnimeListApi())
+            {
+                Assert.ThrowsAsync<MalUserNotFoundException>(() => api.GetAnimeListForUserAsync("oijsfjisfdjfsdojpfsdp"));
+            }
+        }
     }
 }
 
 /*
- Copyright 2012 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
