@@ -116,6 +116,11 @@ namespace MalApi
                 throw new MalApiException((string)error);
             }
 
+            if (!doc.Root.HasElements)
+            {
+                throw new MalUserNotFoundException("No MAL list exists for this user.");
+            }
+
             XElement myinfo = GetExpectedElement(doc.Root, "myinfo");
             int userId = GetElementValueInt(myinfo, "user_id");
             string canonicalUserName = GetElementValueString(myinfo, "user_name");
@@ -259,7 +264,7 @@ namespace MalApi
 }
 
 /*
- Copyright 2012 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
