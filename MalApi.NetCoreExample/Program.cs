@@ -7,6 +7,8 @@ namespace MalApi.NetCoreExample
     {
         static void Main(string[] args)
         {
+            // No logging support for MalApi in .NET Core yet.
+            // At this time there is no Common.Logging adapter for NLog that supports .NET core.
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
                 api.UserAgent = "MalApiExample";

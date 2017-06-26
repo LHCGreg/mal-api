@@ -9,6 +9,16 @@ namespace MalApi.Example
     {
         static void Main(string[] args)
         {
+            // MalApi uses the Common.Logging logging abstraction.
+            // You can hook it up to any logging library that has a Common.Logging adapter.
+            // See App.config for an example of hooking up MalApi to NLog.
+            // Note that you will also need the appropriate NLog and Common.Logging.NLogXX packages installed.
+            // Hooking up logging is not necessary but can be useful.
+            // With the configuration in this example and with this example program, you will see lines like:
+
+            // Logged from MalApi: Getting anime list for MAL user LordHighCaptain using URI https://myanimelist.net/malappinfo.php?status=all&type=anime&u=LordHighCaptain
+            // Logged from MalApi: Successfully retrieved anime list for user LordHighCaptain
+
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
                 api.UserAgent = "MalApiExample";
