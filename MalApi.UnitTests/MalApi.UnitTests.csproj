@@ -47,9 +47,14 @@
   <ItemGroup>
     <Compile Include="AnimeListCacheTests.cs" />
     <Compile Include="MalAppInfoXmlTests.cs" />
-    <Compile Include="MalAppInfoXmlTests.xml.cs" />
     <Compile Include="MyAnimeListApiTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Eureka_Seven.htm" />
+    <EmbeddedResource Include="test.xml" />
+    <EmbeddedResource Include="test_clean.xml" />
+    <EmbeddedResource Include="test_error.xml" />
+    <EmbeddedResource Include="test_no_such_user.xml" />
+    <EmbeddedResource Include="test_no_such_user_old.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MalApi\MalApi.csproj">
@@ -58,9 +63,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Eureka_Seven.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

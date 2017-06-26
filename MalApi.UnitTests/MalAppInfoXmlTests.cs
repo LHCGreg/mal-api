@@ -14,7 +14,7 @@ namespace MalApi.UnitTests
         [Test]
         public void ParseWithTextReaderTest()
         {
-            using (StringReader reader = new StringReader(TestXml))
+            using (TextReader reader = Helpers.GetResourceStream("test.xml"))
             {
                 MalUserLookupResults results = MalAppInfoXml.Parse(reader);
                 DoAsserts(results);
@@ -24,7 +24,7 @@ namespace MalApi.UnitTests
         [Test]
         public void ParseWithXElementTest()
         {
-            XDocument doc = XDocument.Parse(CleanTestXml);
+            XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_clean.xml"));
             MalUserLookupResults results = MalAppInfoXml.Parse(doc);
             DoAsserts(results);
         }
@@ -32,7 +32,7 @@ namespace MalApi.UnitTests
         [Test]
         public void ParseInvalidUserWithTextReaderTest()
         {
-            using (StringReader reader = new StringReader(InvalidUserXml))
+            using (TextReader reader = Helpers.GetResourceStream("test_no_such_user.xml"))
             {
                 Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.Parse(reader));
             }
@@ -41,7 +41,7 @@ namespace MalApi.UnitTests
         [Test]
         public void ParseInvalidUserWithXElementTest()
         {
-            XDocument doc = XDocument.Parse(InvalidUserXml);
+            XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_no_such_user.xml"));
             Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.Parse(doc));
         }
 
@@ -91,7 +91,7 @@ namespace MalApi.UnitTests
 }
 
 /*
- Copyright 2012 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

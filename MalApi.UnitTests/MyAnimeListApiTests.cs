@@ -14,9 +14,11 @@ namespace MalApi.UnitTests
         [Test]
         public void TestScrapeAnimeDetailsFromHtml()
         {
-            string thisAssemblyPath = typeof(MyAnimeListApiTests).GetTypeInfo().Assembly.CodeBase.Replace("file:///", "");
-            string htmlFilePath = Path.Combine(Path.GetDirectoryName(thisAssemblyPath), "Eureka_Seven.htm");
-            string html = File.ReadAllText(htmlFilePath);
+            string html;
+            using (StreamReader reader = Helpers.GetResourceStream("Eureka_Seven.htm"))
+            {
+                html = reader.ReadToEnd();
+            }
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
