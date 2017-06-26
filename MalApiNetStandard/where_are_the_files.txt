@@ -1,1 +1,0 @@
-﻿This project's source files are under the MalApi project. Visual Studio doesn't show them under the project, but they are included in the build.

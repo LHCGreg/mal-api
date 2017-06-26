@@ -1,105 +1,53 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{85BC477F-4798-4006-A342-715E7565B3BB}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
     <RootNamespace>MalApi</RootNamespace>
+    <PackageId>MalApi</PackageId>
+    <Version>4.0.0-Beta1</Version>
+    <Authors>Greg Najda</Authors>
+    <Company />
+    <Product />
+    <PackageReleaseNotes>MalApi now supports async calls. .NET core is now supported via a netstandard release. .NET 4.5 is now the minimum supported framework version for the full framework targeted package, up from 4.0.</PackageReleaseNotes>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/LHCGreg/mal-api</PackageProjectUrl>
+    <PackageTags>anime myanimelist myanimelist.net MAL</PackageTags>
     <AssemblyName>MalApi</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+  
+  <PropertyGroup>
+    <!-- Manual override of some assembly attributes that we want to be different from NuGet package attributes. -->
+    <!-- Manually specify assembly description in AssemblyInfo.cs for a simpler description
+         not geared towards people looking for a package. -->
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+
+    <Description>MalApi is a .NET library for accessing the myanimelist.net API. You can get a user's anime list, get a list of recently online users, and get an anime's genres. You must set the UserAgent property of the MyAnimeListApi object to your myanimelist.net API key.</Description>
+
+    <!-- Manually specify company. The Authors field of the NuGet package is not appropriate for this. -->
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    
+    <!-- Use MAL API instead of MalApi for the product. -->
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\MalApi.xml</DocumentationFile>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1591</NoWarn>
-    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\$(TargetFramework)\MalApi.xml</DocumentationFile>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn />
+  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Common.Logging, Version=3.4.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Common.Logging.3.4.0-Beta2\lib\net40\Common.Logging.dll</HintPath>
-    </Reference>
-    <Reference Include="Common.Logging.Core, Version=3.4.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Common.Logging.Core.3.4.0-Beta2\lib\net40\Common.Logging.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.CSharp" />
+    <PackageReference Include="Common.Logging" Version="3.4.0-Beta2" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AnimeDetailsResults.cs" />
-    <Compile Include="AnimeListCache.cs" />
-    <Compile Include="CachingMyAnimeListApi.cs" />
-    <Compile Include="CompletionStatus.cs" />
-    <Compile Include="Genre.cs" />
-    <Compile Include="IMyAnimeListApi.cs" />
-    <Compile Include="Logging.cs" />
-    <Compile Include="MalAnimeInfoFromUserLookup.cs" />
-    <Compile Include="MalAnimeNotFoundException.cs" />
-    <Compile Include="MalAnimeType.cs" />
-    <Compile Include="MalApiRequestException.cs" />
-    <Compile Include="MalAppInfoXml.cs" />
-    <Compile Include="MalSeriesStatus.cs" />
-    <Compile Include="MyAnimeListApi.cs" />
-    <Compile Include="MalApiException.cs" />
-    <Compile Include="MalUserLookupResults.cs" />
-    <Compile Include="MalUserNotFoundException.cs" />
-    <Compile Include="MyAnimeListEntry.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RateLimitingMyAnimeListApi.cs" />
-    <Compile Include="RecentUsersResults.cs" />
-    <Compile Include="RetryOnFailureMyAnimeListApi.cs" />
-    <Compile Include="UncertainDate.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\license.txt">
-      <Link>license.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\notice.txt">
-      <Link>notice.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="MalApi.nuspec">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="MalApi.targets" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="package\license.txt" />
-    <Content Include="package\notice.txt" />
-    <Content Include="readme.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="package\lib\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
-  <Import Project="MalApi.targets" />
 </Project>

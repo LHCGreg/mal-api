@@ -1,1 +1,1 @@
-﻿This project is the .NET 4.5 build of MalApi. The MalApiNetStandard shares the same source files but targets netstandard and may reference different versions of libraries as needed in order to support that.
+﻿This project targets both .NET 4.5 and netstandard 1.3 by using the new style of csproj ("sdk project"). The .csproj contains some manually specified properties.

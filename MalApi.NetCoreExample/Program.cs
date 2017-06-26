@@ -1,7 +1,7 @@
 ﻿using MalApi;
 using System;
 
-namespace MalApiNetStandard.NetCore.Example
+namespace MalApi.NetCoreExample
 {
     class Program
     {

@@ -2,5 +2,6 @@ bin/
 obj/
 *.user
 *.suo
+*.pubxml
 packages/*/
 MalApi/package/
