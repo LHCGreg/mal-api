@@ -12,7 +12,7 @@ using (MyAnimeListApi api = new MyAnimeListApi())
 }
 ```
 
-Binaries are available as a [NuGet package](https://www.nuget.org/packages/MalApi/) called MalApi.
+Binaries are available as a [NuGet package](https://www.nuget.org/packages/MalApi/) called MalApi. The package supports .NET 4.5.2 and netstandard 1.3.
 
 MalApi currently contains these MAL functions:
 - Getting a user's anime list via http://myanimelist.net/malappinfo.php?status=all&type=anime&u=username. MalApi handles even malformed XML that MAL can generate when users put certain characters in tags.
@@ -25,7 +25,5 @@ Also included are some useful implementations of IMyAnimeListApi that wrap anoth
 - RetryOnFailureMyAnimeListApi waits a short period before retrying a request if a request fails. After a certain number of failures, it will give up.
 
 MalApi can be configured to log using any logging library compatible with Common.Logging. See App.config in the MalApi.Example project. MalApi will use the logger name "MAL API". Consult the Common.Logging and NLog documentation for more information about logging.
-
-MalApi is compatible with Mono.
 
 MalApi is licensed under the Apache License 2.0.
