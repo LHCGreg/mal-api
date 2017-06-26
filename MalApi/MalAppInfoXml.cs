@@ -17,6 +17,7 @@ namespace MalApi
         /// a user has a &amp; character in their tags.
         /// </summary>
         /// <param name="xmlTextReader"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="MalApi.MalUserNotFoundException"></exception>
         /// <exception cref="MalApi.MalApiException"></exception>
@@ -89,6 +90,7 @@ namespace MalApi
         /// they will not be escaped in the XML.
         /// </summary>
         /// <param name="xmlTextReader"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         private static async Task<StringReader> SanitizeAnimeListXmlAsync(TextReader xmlTextReader, CancellationToken cancellationToken)
         {
