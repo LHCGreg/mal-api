@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
 using System.Reflection;
 using System.IO;
+using FluentAssertions;
+using Xunit;
 
 namespace MalApi.UnitTests
 {
-    [TestFixture]
     public class MyAnimeListApiTests
     {
-        [Test]
+        [Fact]
         public void TestScrapeAnimeDetailsFromHtml()
         {
             string html;
@@ -31,7 +31,7 @@ namespace MalApi.UnitTests
                     new Genre(22, "Romance"),
                     new Genre(24, "Sci-Fi"),
                 };
-                Assert.That(results.Genres, Is.EquivalentTo(expectedGenres));
+                results.Genres.Should().BeEquivalentTo(expectedGenres);
             }
         }
     }

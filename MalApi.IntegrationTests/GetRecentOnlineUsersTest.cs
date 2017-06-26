@@ -2,27 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
+using Xunit;
 
 namespace MalApi.IntegrationTests
 {
-    [TestFixture]
     public class GetRecentOnlineUsersTest
     {
-        [Test]
         public void GetRecentOnlineUsers()
         {
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
                 RecentUsersResults results = api.GetRecentOnlineUsers();
-                Assert.That(results.RecentUsers.Count, Is.GreaterThan(0));
+                Assert.NotEmpty(results.RecentUsers);
             }
         }
     }
 }
 
 /*
- Copyright 2012 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

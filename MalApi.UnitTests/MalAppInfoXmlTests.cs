@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
 using System.IO;
 using System.Xml.Linq;
+using FluentAssertions;
+using Xunit;
 
 namespace MalApi.UnitTests
 {
-    [TestFixture]
     public partial class MalAppInfoXmlTests
     {
-        [Test]
+        [Fact]
         public void ParseWithTextReaderTest()
         {
             using (TextReader reader = Helpers.GetResourceStream("test.xml"))
@@ -21,7 +21,7 @@ namespace MalApi.UnitTests
             }
         }
 
-        [Test]
+        [Fact]
         public void ParseWithXElementTest()
         {
             XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_clean.xml"));
@@ -29,7 +29,7 @@ namespace MalApi.UnitTests
             DoAsserts(results);
         }
 
-        [Test]
+        [Fact]
         public void ParseInvalidUserWithTextReaderTest()
         {
             using (TextReader reader = Helpers.GetResourceStream("test_no_such_user.xml"))
@@ -38,53 +38,72 @@ namespace MalApi.UnitTests
             }
         }
 
-        [Test]
+        [Fact]
         public void ParseInvalidUserWithXElementTest()
         {
             XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_no_such_user.xml"));
             Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.Parse(doc));
         }
 
+        [Fact]
+        public void ParseOldInvalidUserWithTextReaderTest()
+        {
+            using (TextReader reader = Helpers.GetResourceStream("test_no_such_user_old.xml"))
+            {
+                Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.Parse(reader));
+            }
+        }
+
+        [Fact]
+        public void ParseOldInvalidUserWithXElementTest()
+        {
+            XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_no_such_user_old.xml"));
+            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.Parse(doc));
+        }
+
         private void DoAsserts(MalUserLookupResults results)
         {
-            Assert.That(results.CanonicalUserName, Is.EqualTo("LordHighCaptain"));
-            Assert.That(results.UserId, Is.EqualTo(158667));
-            Assert.That(results.AnimeList.Count, Is.EqualTo(163));
+            Assert.Equal("LordHighCaptain", results.CanonicalUserName);
+            Assert.Equal(158667, results.UserId);
+            Assert.Equal(163, results.AnimeList.Count);
 
             MyAnimeListEntry entry = results.AnimeList.Where(anime => anime.AnimeInfo.AnimeId == 853).First();
-            Assert.That(entry.AnimeInfo.Title, Is.EqualTo("Ouran Koukou Host Club"));
-            Assert.That(entry.AnimeInfo.Type, Is.EqualTo(MalAnimeType.Tv));
-            Assert.That(entry.AnimeInfo.Synonyms, Is.EquivalentTo(new List<string>() { "Ohran Koko Host Club", "Ouran Koukou Hosutobu", "Ouran High School Host Club" }));
-            Assert.That(entry.NumEpisodesWatched, Is.EqualTo(7));
-            Assert.That(entry.Score, Is.EqualTo(7));
-            Assert.That(entry.Status, Is.EqualTo(CompletionStatus.Watching));
-            Assert.That(entry.Tags, Is.EqualTo(new List<string>() { "duck", "goose" }));
+            Assert.Equal("Ouran Koukou Host Club", entry.AnimeInfo.Title);
+            Assert.Equal(MalAnimeType.Tv, entry.AnimeInfo.Type);
+            entry.AnimeInfo.Synonyms.Should().BeEquivalentTo(new List<string>() { "Ohran Koko Host Club", "Ouran Koukou Hosutobu", "Ouran High School Host Club" });
+
+            Assert.Equal(7, entry.NumEpisodesWatched);
+            Assert.Equal(7, entry.Score);
+            Assert.Equal(CompletionStatus.Watching, entry.Status);
+
+            // Test tags with Equal, not equivalent, because order in tags matters
+            Assert.Equal(new List<string>() { "duck", "goose" }, entry.Tags);
 
             entry = results.AnimeList.Where(anime => anime.AnimeInfo.AnimeId == 7311).First();
-            Assert.That(entry.AnimeInfo.Title, Is.EqualTo("Suzumiya Haruhi no Shoushitsu"));
-            Assert.That(entry.AnimeInfo.Type, Is.EqualTo(MalAnimeType.Movie));
-            Assert.That(entry.AnimeInfo.Synonyms, Is.EquivalentTo(new List<string>() { "The Vanishment of Haruhi Suzumiya", "Suzumiya Haruhi no Syoshitsu", "Haruhi movie", "The Disappearance of Haruhi Suzumiya" }));
-            Assert.That(entry.Score, Is.EqualTo((decimal?)null));
-            Assert.That(entry.NumEpisodesWatched, Is.EqualTo(0));
-            Assert.That(entry.Status, Is.EqualTo(CompletionStatus.PlanToWatch));
-            Assert.That(entry.Tags, Is.EqualTo(new List<string>()));
+            Assert.Equal("Suzumiya Haruhi no Shoushitsu", entry.AnimeInfo.Title);
+            Assert.Equal(MalAnimeType.Movie, entry.AnimeInfo.Type);
+            entry.AnimeInfo.Synonyms.Should().BeEquivalentTo(new List<string>() { "The Vanishment of Haruhi Suzumiya", "Suzumiya Haruhi no Syoshitsu", "Haruhi movie", "The Disappearance of Haruhi Suzumiya" });
+            Assert.Equal((decimal?)null, entry.Score);
+            Assert.Equal(0, entry.NumEpisodesWatched);
+            Assert.Equal(CompletionStatus.PlanToWatch, entry.Status);
+            Assert.Equal(new List<string>(), entry.Tags);
 
             entry = results.AnimeList.Where(anime => anime.AnimeInfo.AnimeId == 889).First();
-            Assert.That(entry.AnimeInfo.Title, Is.EqualTo("Black Lagoon"));
+            Assert.Equal("Black Lagoon", entry.AnimeInfo.Title);
 
             // Make sure synonyms that are the same as the real name get filtered out
-            Assert.That(entry.AnimeInfo.Synonyms, Is.EquivalentTo(new List<string>()));
+            entry.AnimeInfo.Synonyms.Should().BeEquivalentTo(new List<string>());
 
             entry = results.AnimeList.Where(anime => anime.AnimeInfo.Title == "Test").First();
             // Make sure that <series_synonyms/> is the same as <series_synonyms></series_synonyms>
-            Assert.That(entry.AnimeInfo.Synonyms, Is.EquivalentTo(new List<string>()));
-            Assert.That(entry.AnimeInfo.StartDate, Is.EqualTo(new UncertainDate(2010, 2, 6)));
-            Assert.That(entry.AnimeInfo.EndDate, Is.EqualTo(UncertainDate.Unknown));
-            Assert.That(entry.AnimeInfo.ImageUrl, Is.EqualTo("https://cdn.myanimelist.net/images/anime/9/24646.jpg"));
-            Assert.That(entry.MyStartDate, Is.EqualTo(new UncertainDate(year: null, month: 2, day: null)));
-            Assert.That(entry.MyFinishDate, Is.EqualTo(UncertainDate.Unknown));
-            Assert.That(entry.MyLastUpdate, Is.EqualTo(new DateTime(year: 2011, month: 4, day: 2, hour: 22, minute: 50, second: 58, kind: DateTimeKind.Utc)));
-            Assert.That(entry.Tags, Is.EqualTo(new List<string>() { "test&test", "< less than", "> greater than", "apos '", "quote \"", "hex ö", "dec !", "control character" }));
+            entry.AnimeInfo.Synonyms.Should().BeEquivalentTo(new List<string>());
+            Assert.Equal(new UncertainDate(2010, 2, 6), entry.AnimeInfo.StartDate);
+            Assert.Equal(UncertainDate.Unknown, entry.AnimeInfo.EndDate);
+            Assert.Equal("https://cdn.myanimelist.net/images/anime/9/24646.jpg", entry.AnimeInfo.ImageUrl);
+            Assert.Equal(new UncertainDate(year: null, month: 2, day: null), entry.MyStartDate);
+            Assert.Equal(UncertainDate.Unknown, entry.MyFinishDate);
+            Assert.Equal(new DateTime(year: 2011, month: 4, day: 2, hour: 22, minute: 50, second: 58, kind: DateTimeKind.Utc), entry.MyLastUpdate);
+            Assert.Equal(new List<string>() { "test&test", "< less than", "> greater than", "apos '", "quote \"", "hex ö", "dec !", "control character" }, entry.Tags);
 
         }
     }

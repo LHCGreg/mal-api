@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
+using FluentAssertions;
+using Xunit;
 
 namespace MalApi.IntegrationTests
 {
-    [TestFixture]
     public class GetAnimeDetailsTest
     {
-        [Test]
+        [Fact]
         public void GetAnimeDetails()
         {
             int animeId = 237; // Eureka Seven
@@ -24,11 +24,11 @@ namespace MalApi.IntegrationTests
                     new Genre(22, "Romance"),
                     new Genre(24, "Sci-Fi"),
                 };
-                Assert.That(results.Genres, Is.EquivalentTo(expectedGenres));
+                results.Genres.Should().BeEquivalentTo(expectedGenres);
             }
         }
 
-        [Test]
+        [Fact]
         public void GetAnimeDetailsForInvalidAnimeId()
         {
             int animeId = 99999;
@@ -41,7 +41,7 @@ namespace MalApi.IntegrationTests
 }
 
 /*
- Copyright 2016 Greg Najda
+ Copyright 2017 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

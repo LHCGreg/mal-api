@@ -2,23 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
 using MalApi;
 using System.Threading;
+using Xunit;
 
 namespace MalApi.UnitTests
 {
-    [TestFixture]
     public class AnimeListCacheTests
     {
-        [Test]
+        [Fact]
         public void TestCacheCaseInsensitivity()
         {
             using (AnimeListCache cache = new AnimeListCache(expiration: TimeSpan.FromHours(5)))
             {
                 cache.PutListForUser("a", new MalUserLookupResults(userId: 5, canonicalUserName: "A", animeList: new List<MyAnimeListEntry>()));
                 cache.GetListForUser("A", out MalUserLookupResults lookup);
-                Assert.That(lookup.UserId, Is.EqualTo(5));
+                Assert.Equal(5, lookup.UserId);
             }
         }
     }

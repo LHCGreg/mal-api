@@ -2,29 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
 using MalApi;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace MalApi.IntegrationTests
 {
-    [TestFixture]
     public class GetAnimeListForUserTest
     {
-        [Test]
+        [Fact]
         public void GetAnimeListForUser()
         {
             string username = "lordhighcaptain";
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
                 MalUserLookupResults userLookup = api.GetAnimeListForUser(username);
-                
+
                 // Just a smoke test that checks that getting an anime list returns something
-                Assert.That(userLookup.AnimeList, Is.Not.Empty);
+                Assert.NotEmpty(userLookup.AnimeList);
             }
         }
 
-        [Test]
+        [Fact]
         public void GetAnimeListForNonexistentUserThrowsCorrectException()
         {
             using (MyAnimeListApi api = new MyAnimeListApi())
@@ -33,7 +32,7 @@ namespace MalApi.IntegrationTests
             }
         }
 
-        [Test]
+        [Fact]
         public void GetAnimeListForNonexistentUserThrowsCorrectExceptionAsync()
         {
             using (MyAnimeListApi api = new MyAnimeListApi())
