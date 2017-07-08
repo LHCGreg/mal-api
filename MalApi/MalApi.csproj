@@ -4,11 +4,11 @@
     <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
     <RootNamespace>MalApi</RootNamespace>
     <PackageId>MalApi</PackageId>
-    <Version>4.0.0-Beta1</Version>
+    <Version>4.0.0-Beta2</Version>
     <Authors>Greg Najda</Authors>
     <Company />
     <Product />
-    <PackageReleaseNotes>MalApi now supports async calls. .NET core is now supported via a netstandard release. .NET 4.5 is now the minimum supported framework version for the full framework targeted package, up from 4.0.</PackageReleaseNotes>
+    <PackageReleaseNotes>Changes from beta1: Dependency on System.Net.Http 4.3.1 because otherwise .NET 4.6 apps referencing this package break with "Could not load file or assembly 'System.Diagnostics.DiagnosticSource, Version=4.0.0.0...". Changes from 3.0: MalApi now supports async calls. .NET core is now supported via a netstandard release. .NET 4.5 is now the minimum supported framework version for the full framework targeted package, up from 4.0.</PackageReleaseNotes>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/LHCGreg/mal-api</PackageProjectUrl>
     <PackageTags>anime myanimelist myanimelist.net MAL</PackageTags>
@@ -40,14 +40,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Net.Http" Version="4.3.1" />
     <PackageReference Include="Common.Logging" Version="3.4.0-Beta2" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
 </Project>
