@@ -8,6 +8,7 @@ namespace MalApi.IntegrationTests
 {
     public class GetRecentOnlineUsersTest
     {
+        [Fact]
         public void GetRecentOnlineUsers()
         {
             using (MyAnimeListApi api = new MyAnimeListApi())
