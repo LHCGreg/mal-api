@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 
@@ -25,6 +27,19 @@ namespace MalApi.IntegrationTests
                     new Genre(24, "Sci-Fi"),
                 };
                 results.Genres.Should().BeEquivalentTo(expectedGenres);
+            }
+        }
+
+        [Fact]
+        public void GetAnimeDetailsCanceled()
+        {
+            int animeId = 237; // Eureka Seven
+            using (MyAnimeListApi api = new MyAnimeListApi())
+            {
+                CancellationTokenSource tokenSource = new CancellationTokenSource();
+                Task<AnimeDetailsResults> task = api.GetAnimeDetailsAsync(animeId, tokenSource.Token);
+                tokenSource.Cancel();
+                Assert.Throws<TaskCanceledException>(() => task.GetAwaiter().GetResult());
             }
         }
 

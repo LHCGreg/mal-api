@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace MalApi.IntegrationTests
@@ -15,6 +17,18 @@ namespace MalApi.IntegrationTests
             {
                 RecentUsersResults results = api.GetRecentOnlineUsers();
                 Assert.NotEmpty(results.RecentUsers);
+            }
+        }
+
+        [Fact]
+        public void GetRecentOnlineUsersCanceled()
+        {
+            using (MyAnimeListApi api = new MyAnimeListApi())
+            {
+                CancellationTokenSource tokenSource = new CancellationTokenSource();
+                Task<RecentUsersResults> task = api.GetRecentOnlineUsersAsync(tokenSource.Token);
+                tokenSource.Cancel();
+                Assert.Throws<TaskCanceledException>(() => task.GetAwaiter().GetResult());
             }
         }
     }

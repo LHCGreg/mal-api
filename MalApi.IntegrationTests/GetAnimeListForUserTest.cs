@@ -5,6 +5,7 @@ using System.Text;
 using MalApi;
 using System.Threading.Tasks;
 using Xunit;
+using System.Threading;
 
 namespace MalApi.IntegrationTests
 {
@@ -20,6 +21,19 @@ namespace MalApi.IntegrationTests
 
                 // Just a smoke test that checks that getting an anime list returns something
                 Assert.NotEmpty(userLookup.AnimeList);
+            }
+        }
+
+        [Fact]
+        public void GetAnimeListForUserCanceled()
+        {
+            string username = "lordhighcaptain";
+            using (MyAnimeListApi api = new MyAnimeListApi())
+            {
+                CancellationTokenSource tokenSource = new CancellationTokenSource();
+                Task<MalUserLookupResults> userLookupTask = api.GetAnimeListForUserAsync(username, tokenSource.Token);
+                tokenSource.Cancel();
+                Assert.Throws<TaskCanceledException>(() => userLookupTask.GetAwaiter().GetResult());
             }
         }
 

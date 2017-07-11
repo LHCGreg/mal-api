@@ -139,6 +139,10 @@ namespace MalApi
             {
                 throw;
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (MalApiException)
             {
                 // Log the body of the response returned by the API server if there was an error.
@@ -206,12 +210,20 @@ namespace MalApi
                 }
             };
 
-            HttpRequestMessage request = InitNewRequest(userInfoUri, HttpMethod.Get);
-            MalUserLookupResults parsedList = await ProcessRequestAsync(request, responseProcessingFunc, cancellationToken: cancellationToken,
-    baseErrorMessage: string.Format("Failed getting anime list for user {0} using url {1}", user, userInfoUri)).ConfigureAwait(continueOnCapturedContext: false);
+            try
+            {
+                HttpRequestMessage request = InitNewRequest(userInfoUri, HttpMethod.Get);
+                MalUserLookupResults parsedList = await ProcessRequestAsync(request, responseProcessingFunc, cancellationToken: cancellationToken,
+        baseErrorMessage: string.Format("Failed getting anime list for user {0} using url {1}", user, userInfoUri)).ConfigureAwait(continueOnCapturedContext: false);
 
-            Logging.Log.InfoFormat("Successfully retrieved anime list for user {0}", user);
-            return parsedList;
+                Logging.Log.InfoFormat("Successfully retrieved anime list for user {0}", user);
+                return parsedList;
+            }
+            catch (OperationCanceledException)
+            {
+                Logging.Log.InfoFormat("Canceled getting anime list for MAL user {0}", user);
+                throw;
+            }
         }
 
         /// <summary>
@@ -248,12 +260,21 @@ namespace MalApi
             Logging.Log.InfoFormat("Getting list of recent online MAL users using URI {0}", RecentOnlineUsersUri);
 
             HttpRequestMessage request = InitNewRequest(RecentOnlineUsersUri, HttpMethod.Get);
-            RecentUsersResults recentUsers = await ProcessRequestAsync(request, ScrapeUsersFromHtml,
-                baseErrorMessage: "Failed getting list of recent MAL users.", cancellationToken: cancellationToken)
-                .ConfigureAwait(continueOnCapturedContext: false);
 
-            Logging.Log.Info("Successfully got list of recent online MAL users.");
-            return recentUsers;
+            try
+            {
+                RecentUsersResults recentUsers = await ProcessRequestAsync(request, ScrapeUsersFromHtml,
+                    baseErrorMessage: "Failed getting list of recent MAL users.", cancellationToken: cancellationToken)
+                    .ConfigureAwait(continueOnCapturedContext: false);
+
+                Logging.Log.Info("Successfully got list of recent online MAL users.");
+                return recentUsers;
+            }
+            catch (OperationCanceledException)
+            {
+                Logging.Log.Info("Canceled getting list of recent online MAL users.");
+                throw;
+            }
         }
 
         /// <summary>
@@ -314,15 +335,24 @@ RegexOptions.Compiled));
         public async Task<AnimeDetailsResults> GetAnimeDetailsAsync(int animeId, CancellationToken cancellationToken)
         {
             string url = string.Format(AnimeDetailsUrlFormat, animeId);
-            Logging.Log.InfoFormat("Getting anime details from {0}.", url);
+            Logging.Log.InfoFormat("Getting anime details for anime ID {0} from {1}.", animeId, url);
 
             HttpRequestMessage request = InitNewRequest(url, HttpMethod.Get);
-            AnimeDetailsResults results = await ProcessRequestAsync(request, ScrapeAnimeDetailsFromHtml, animeId,
-                httpErrorStatusHandler: GetAnimeDetailsHttpErrorStatusHandler, cancellationToken: cancellationToken,
-                baseErrorMessage: string.Format("Failed getting anime details for anime ID {0}.", animeId))
-                .ConfigureAwait(continueOnCapturedContext: false);
-            Logging.Log.InfoFormat("Successfully got details from {0}.", url);
-            return results;
+
+            try
+            {
+                AnimeDetailsResults results = await ProcessRequestAsync(request, ScrapeAnimeDetailsFromHtml, animeId,
+                    httpErrorStatusHandler: GetAnimeDetailsHttpErrorStatusHandler, cancellationToken: cancellationToken,
+                    baseErrorMessage: string.Format("Failed getting anime details for anime ID {0}.", animeId))
+                    .ConfigureAwait(continueOnCapturedContext: false);
+                Logging.Log.InfoFormat("Successfully got details from {0}.", url);
+                return results;
+            }
+            catch (OperationCanceledException)
+            {
+                Logging.Log.InfoFormat("Canceled getting anime details for anime ID {0}.", animeId);
+                throw;
+            }
         }
 
         /// <summary>
