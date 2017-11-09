@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
+using MalApi.Anime;
 
 namespace MalApi.IntegrationTests
 {

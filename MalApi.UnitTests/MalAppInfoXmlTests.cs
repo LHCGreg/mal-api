@@ -6,6 +6,7 @@ using System.IO;
 using System.Xml.Linq;
 using FluentAssertions;
 using Xunit;
+using MalApi.Anime;
 
 namespace MalApi.UnitTests
 {
@@ -25,7 +26,7 @@ namespace MalApi.UnitTests
         public void ParseWithXElementTest()
         {
             XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_clean.xml"));
-            MalUserLookupResults results = MalAppInfoXml.Parse(doc);
+            MalUserLookupResults results = MalAppInfoXml.ParseAnimeResults(doc);
             DoAsserts(results);
         }
 
@@ -42,7 +43,7 @@ namespace MalApi.UnitTests
         public void ParseInvalidUserWithXElementTest()
         {
             XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_no_such_user.xml"));
-            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.Parse(doc));
+            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseAnimeResults(doc));
         }
 
         [Fact]
@@ -58,7 +59,7 @@ namespace MalApi.UnitTests
         public void ParseOldInvalidUserWithXElementTest()
         {
             XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_no_such_user_old.xml"));
-            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.Parse(doc));
+            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseAnimeResults(doc));
         }
 
         private void DoAsserts(MalUserLookupResults results)
@@ -74,7 +75,7 @@ namespace MalApi.UnitTests
 
             Assert.Equal(7, entry.NumEpisodesWatched);
             Assert.Equal(7, entry.Score);
-            Assert.Equal(CompletionStatus.Watching, entry.Status);
+            Assert.Equal(AnimeCompletionStatus.Watching, entry.Status);
 
             // Test tags with Equal, not equivalent, because order in tags matters
             Assert.Equal(new List<string>() { "duck", "goose" }, entry.Tags);
@@ -85,7 +86,7 @@ namespace MalApi.UnitTests
             entry.AnimeInfo.Synonyms.Should().BeEquivalentTo(new List<string>() { "The Vanishment of Haruhi Suzumiya", "Suzumiya Haruhi no Syoshitsu", "Haruhi movie", "The Disappearance of Haruhi Suzumiya" });
             Assert.Equal((decimal?)null, entry.Score);
             Assert.Equal(0, entry.NumEpisodesWatched);
-            Assert.Equal(CompletionStatus.PlanToWatch, entry.Status);
+            Assert.Equal(AnimeCompletionStatus.PlanToWatch, entry.Status);
             Assert.Equal(new List<string>(), entry.Tags);
 
             entry = results.AnimeList.Where(anime => anime.AnimeInfo.AnimeId == 889).First();

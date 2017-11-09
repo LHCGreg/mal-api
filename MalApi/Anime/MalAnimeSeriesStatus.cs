@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MalApi
+namespace MalApi.Anime
 {
-    public enum CompletionStatus
+    public enum MalAnimeSeriesStatus
     {
-        Watching = 1,
-        Completed = 2,
-        OnHold = 3,
-        Dropped = 4,
-        PlanToWatch = 6,
+        Airing = 1,
+        FinishedAiring = 2,
+        NotYetAired = 3
     }
 }
 

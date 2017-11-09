@@ -5,6 +5,7 @@ using System.Text;
 using MalApi;
 using System.Threading;
 using Xunit;
+using MalApi.Anime;
 
 namespace MalApi.UnitTests
 {

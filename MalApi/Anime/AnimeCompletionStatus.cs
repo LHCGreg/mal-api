@@ -3,21 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MalApi
+namespace MalApi.Anime
 {
-    /// <summary>
-    /// Indicates that the anime that was searched for does not exist.
-    /// </summary>
-    public class MalAnimeNotFoundException : MalApiException
+    public enum AnimeCompletionStatus
     {
-        public MalAnimeNotFoundException() { }
-        public MalAnimeNotFoundException(string message) : base(message) { }
-        public MalAnimeNotFoundException(string message, Exception inner) : base(message, inner) { }
+        Watching = 1,
+        Completed = 2,
+        OnHold = 3,
+        Dropped = 4,
+        PlanToWatch = 6,
     }
 }
 
 /*
- Copyright 2017 Greg Najda
+ Copyright 2012 Greg Najda
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

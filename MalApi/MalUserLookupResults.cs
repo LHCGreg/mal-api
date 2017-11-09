@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MalApi.Anime;
+using MalApi.Manga;
 
 namespace MalApi
 {
     public class MalUserLookupResults
     {
         public ICollection<MyAnimeListEntry> AnimeList { get; private set; }
+        public ICollection<MyMangaListEntry> MangaList { get; private set; }
         public int UserId { get; private set; }
 
         /// <summary>
@@ -20,6 +23,13 @@ namespace MalApi
             UserId = userId;
             CanonicalUserName = canonicalUserName;
             AnimeList = animeList;
+        }
+
+        public MalUserLookupResults(int userId, string canonicalUserName, ICollection<MyMangaListEntry> mangaList)
+        {
+            UserId = userId;
+            CanonicalUserName = canonicalUserName;
+            MangaList = mangaList;
         }
     }
 }
