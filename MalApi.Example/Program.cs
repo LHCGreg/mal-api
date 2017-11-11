@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MalApi.Anime;
-using MalApi.Manga;
 
 
 namespace MalApi.Example

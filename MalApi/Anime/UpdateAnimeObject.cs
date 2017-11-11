@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace MalApi.Anime
+namespace MalApi
 {
     [XmlRoot("entry")]
     public class UpdateAnimeObject : UpdateObjectBase

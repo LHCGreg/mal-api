@@ -7,8 +7,6 @@ using System.Text.RegularExpressions;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Threading;
-using MalApi.Anime;
-using MalApi.Manga;
 
 namespace MalApi
 {

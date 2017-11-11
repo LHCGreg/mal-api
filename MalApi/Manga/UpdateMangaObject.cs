@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace MalApi.Manga
+namespace MalApi
 {
     [XmlRoot("entry")]
     public class UpdateMangaObject : UpdateObjectBase

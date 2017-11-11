@@ -1,4 +1,4 @@
-﻿namespace MalApi.Manga
+﻿namespace MalApi
 {
     public enum MangaCompletionStatus
     {

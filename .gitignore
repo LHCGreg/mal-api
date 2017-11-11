@@ -5,3 +5,4 @@ obj/
 *.pubxml
 packages/*/
 MalApi/package/
+.vs/

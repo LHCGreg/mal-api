@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace MalApi.Anime
+namespace MalApi
 {
     /// <summary>
     /// Indicates that the anime that was searched for does not exist.
