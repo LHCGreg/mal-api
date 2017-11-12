@@ -43,6 +43,8 @@ namespace MalApi.UnitTests
         {
             XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_no_such_user.xml"));
             Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseAnimeResults(doc));
+
+            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseMangaResults(doc));
         }
 
         [Fact]
@@ -59,6 +61,8 @@ namespace MalApi.UnitTests
         {
             XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_no_such_user_old.xml"));
             Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseAnimeResults(doc));
+
+            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseMangaResults(doc));
         }
 
         private void DoAsserts(MalUserLookupResults results)
