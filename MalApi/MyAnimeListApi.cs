@@ -5,6 +5,7 @@ using System.Net;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Threading;
 
@@ -16,12 +17,6 @@ namespace MalApi
     public class MyAnimeListApi : IMyAnimeListApi
     {
         private static readonly string AnimeDetailsUrlFormat = "https://myanimelist.net/anime/{0}";
-
-        private const string MalAppAnimeInfoUri = "https://myanimelist.net/malappinfo.php?status=all&type=anime&u={0}";
-        private const string MalAppMangaInfoUri = "https://myanimelist.net/malappinfo.php?status=all&type=manga&u={0}";
-
-        private const string MalAppAnimeUpdateUri = "https://myanimelist.net/api/animelist/update/{0}.xml";
-        private const string MalAppMangaUpdateUri = "https://myanimelist.net/api/mangalist/update/{0}.xml";
 
         private const string RecentOnlineUsersUri = "https://myanimelist.net/users.php";
 
@@ -78,36 +73,30 @@ namespace MalApi
             return request;
         }
 
-        private HttpRequestMessage InitNewRequestWithCredentials(string user, string password, string uri, HttpMethod method, UpdateObjectBase updateInfo = null)
+        private HttpRequestMessage InitNewRequestWithCredentials(string uri, HttpMethod method, string user, string password)
         {
-            HttpRequestMessage request = new HttpRequestMessage(method, uri);
+            HttpRequestMessage request = InitNewRequest(uri, method);
 
             // Requests with credentials require them to be encoded in base64
             string credentials;
             if (user != null && password != null)
             {
-                var plainTextBytes = Encoding.UTF8.GetBytes(user + ":" + password);
-                credentials =  Convert.ToBase64String(plainTextBytes);
+                byte[] plainTextBytes = Encoding.UTF8.GetBytes(user + ":" + password);
+                credentials = Convert.ToBase64String(plainTextBytes);
             }
             else
             {
-                throw new Exception("Invalid input credentials format (both username and password have to be input OR just the base64 representation");
+                if (user == null)
+                {
+                    throw new ArgumentNullException(nameof(user));
+                }
+
+                // This will always be true given the && condition above
+                throw new ArgumentNullException(nameof(password));
             }
 
-            if (UserAgent != null)
-            {
-                request.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
-                // Adding the authorization header with the credentials
-                request.Headers.TryAddWithoutValidation("Authorization", "Basic " + credentials);
-            }
-
-            // Encoding and adding the new information in the content(body) of the request
-			if(updateInfo != null)
-			{
-				var xml = updateInfo.GenerateXml();
-				var content = "data=" + WebUtility.UrlEncode(xml);
-				request.Content = new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded");
-			}
+            // Adding the authorization header with the credentials
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
             return request;
         }
@@ -229,7 +218,7 @@ namespace MalApi
         /// <param name="user"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public Task<string> UpdateAnimeForUserAsync(int animeId, UpdateAnimeObject updateInfo, string user, string password)
+        public Task<string> UpdateAnimeForUserAsync(int animeId, UpdateAnime updateInfo, string user, string password)
         {
             return UpdateAnimeForUserAsync(animeId, updateInfo, user, password, CancellationToken.None);
         }
@@ -254,7 +243,7 @@ namespace MalApi
         /// <param name="user"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public Task<string> UpdateMangaForUserAsync(int mangaId, UpdateMangaObject updateInfo, string user, string password)
+        public Task<string> UpdateMangaForUserAsync(int mangaId, UpdateManga updateInfo, string user, string password)
         {
             return UpdateMangaForUserAsync(mangaId, updateInfo, user, password, CancellationToken.None);
         }
@@ -269,7 +258,9 @@ namespace MalApi
         /// <exception cref="MalApi.MalApiException"></exception>
         public async Task<MalUserLookupResults> GetAnimeListForUserAsync(string user, CancellationToken cancellationToken)
         {
-            string userInfoUri = string.Format(MalAppAnimeInfoUri, Uri.EscapeDataString(user));
+            const string malAppAnimeInfoUriFormatString = "https://myanimelist.net/malappinfo.php?status=all&type=anime&u={0}";
+
+            string userInfoUri = string.Format(malAppAnimeInfoUriFormatString, Uri.EscapeDataString(user));
 
             Logging.Log.InfoFormat("Getting anime list for MAL user {0} using URI {1}", user, userInfoUri);
 
@@ -291,8 +282,10 @@ namespace MalApi
             try
             {
                 HttpRequestMessage request = InitNewRequest(userInfoUri, HttpMethod.Get);
-                MalUserLookupResults parsedList = await ProcessRequestAsync(request, responseProcessingFunc, cancellationToken: cancellationToken,
-        baseErrorMessage: string.Format("Failed getting anime list for user {0} using url {1}", user, userInfoUri)).ConfigureAwait(continueOnCapturedContext: false);
+                MalUserLookupResults parsedList = await ProcessRequestAsync(request, responseProcessingFunc,
+                    cancellationToken: cancellationToken,
+                    baseErrorMessage: string.Format("Failed getting anime list for user {0} using url {1}", user,
+                        userInfoUri)).ConfigureAwait(continueOnCapturedContext: false);
 
                 Logging.Log.InfoFormat("Successfully retrieved anime list for user {0}", user);
                 return parsedList;
@@ -310,40 +303,36 @@ namespace MalApi
         /// <param name="animeId">ID of the anime</param>
         /// <param name="updateInfo">The updated information</param>
         /// <param name="cancellationToken"></param>
-        /// <param name="user">MAL user</param>
+        /// <param name="user">MAL username</param>
         /// <param name="password">MAL password</param>
         /// <returns></returns>
-        public async Task<string> UpdateAnimeForUserAsync(int animeId, UpdateAnimeObject updateInfo, string user, string password, CancellationToken cancellationToken)
+        public async Task<string> UpdateAnimeForUserAsync(int animeId, UpdateAnime updateInfo, string user, string password, CancellationToken cancellationToken)
         {
-            string userInfoUri = string.Format(MalAppAnimeUpdateUri, Uri.EscapeDataString(animeId.ToString()));
+            const string malAnimeUpdateUriFormatString = "https://myanimelist.net/api/animelist/update/{0}.xml";
+
+            string userInfoUri = string.Format(malAnimeUpdateUriFormatString, Uri.EscapeDataString(animeId.ToString()));
 
             Logging.Log.InfoFormat("Updating anime entry for MAL anime ID {0}, user {1} using URI {2}", animeId, user, userInfoUri);
 
             Func<string, string> responseProcessingFunc = (response) =>
             {
-                using (TextReader xmlTextReader = new StringReader(response))
-                {
-                    try
-                    {
-                        return xmlTextReader.ToString();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception(string.Format("Exception for user {0} and anime ID {1}.", user, animeId), ex);
-                    }
-                }
+                return response;
             };
 
             try
             {
-                HttpRequestMessage request = InitNewRequestWithCredentials(user, password, userInfoUri, HttpMethod.Post, updateInfo);
+                HttpRequestMessage request = InitNewRequestWithCredentials(userInfoUri, HttpMethod.Post, user, password);
+
+                // Encoding and adding the new information in the content(body) of the request
+                string xml = updateInfo.GenerateXml();
+                request.Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[] { new KeyValuePair<string, string>("data", xml) });
 
                 string result = await ProcessRequestAsync(request, responseProcessingFunc, cancellationToken: cancellationToken,
                     baseErrorMessage: string.Format("Failed updating anime entry for anime ID {0}, user {0} using url {1}", animeId, user, userInfoUri)).ConfigureAwait(continueOnCapturedContext: false);
 
                 Logging.Log.InfoFormat("Successfully updated anime entry for anime ID {0} and user {0}", animeId, user);
 
-                return null;
+                return result;
             }
             catch (OperationCanceledException)
             {
@@ -360,9 +349,12 @@ namespace MalApi
         /// <returns></returns>
         /// <exception cref="MalApi.MalUserNotFoundException"></exception>
         /// <exception cref="MalApi.MalApiException"></exception>
-        public async Task<MalUserLookupResults> GetMangaListForUserAsync(string user, CancellationToken cancellationToken)
+        public async Task<MalUserLookupResults> GetMangaListForUserAsync(string user,
+            CancellationToken cancellationToken)
         {
-            string userInfoUri = string.Format(MalAppMangaInfoUri, Uri.EscapeDataString(user));
+            const string malAppMangaInfoUriFormatString = "https://myanimelist.net/malappinfo.php?status=all&type=manga&u={0}";
+
+            string userInfoUri = string.Format(malAppMangaInfoUriFormatString, Uri.EscapeDataString(user));
 
             Logging.Log.InfoFormat("Getting manga list for MAL user {0} using URI {1}", user, userInfoUri);
 
@@ -384,8 +376,10 @@ namespace MalApi
             try
             {
                 HttpRequestMessage request = InitNewRequest(userInfoUri, HttpMethod.Get);
-                MalUserLookupResults parsedList = await ProcessRequestAsync(request, responseProcessingFunc, cancellationToken: cancellationToken,
-        baseErrorMessage: string.Format("Failed getting manga list for user {0} using url {1}", user, userInfoUri)).ConfigureAwait(continueOnCapturedContext: false);
+                MalUserLookupResults parsedList = await ProcessRequestAsync(request, responseProcessingFunc,
+                    cancellationToken: cancellationToken,
+                    baseErrorMessage: string.Format("Failed getting manga list for user {0} using url {1}", user,
+                        userInfoUri)).ConfigureAwait(continueOnCapturedContext: false);
 
                 Logging.Log.InfoFormat("Successfully retrieved manga list for user {0}", user);
                 return parsedList;
@@ -406,37 +400,33 @@ namespace MalApi
         /// <param name="user">MAL user</param>
         /// <param name="password">MAL password</param>
         /// <returns></returns>
-        public async Task<string> UpdateMangaForUserAsync(int mangaId, UpdateMangaObject updateInfo, string user, string password, CancellationToken cancellationToken)
+        public async Task<string> UpdateMangaForUserAsync(int mangaId, UpdateManga updateInfo, string user, string password, CancellationToken cancellationToken)
         {
-            string userInfoUri = string.Format(MalAppMangaUpdateUri, Uri.EscapeDataString(mangaId.ToString()));
+            const string malMangaUpdateUriFormatString = "https://myanimelist.net/api/mangalist/update/{0}.xml";
+
+            string userInfoUri = string.Format(malMangaUpdateUriFormatString, Uri.EscapeDataString(mangaId.ToString()));
 
             Logging.Log.InfoFormat("Updating manga entry for MAL manga ID {0}, user {1} using URI {2}", mangaId, user, userInfoUri);
 
             Func<string, string> responseProcessingFunc = (response) =>
             {
-                using (TextReader xmlTextReader = new StringReader(response))
-                {
-                    try
-                    {
-                        return xmlTextReader.ToString();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception(string.Format("Exception for user {0} and manga ID {1}.", user, mangaId), ex);
-                    }
-                }
+                return response;
             };
 
             try
             {
-                HttpRequestMessage request = InitNewRequestWithCredentials(user, password, userInfoUri, HttpMethod.Post, updateInfo);
+                HttpRequestMessage request = InitNewRequestWithCredentials(userInfoUri, HttpMethod.Post, user, password);
+
+                // Encoding and adding the new information in the content(body) of the request
+                string xml = updateInfo.GenerateXml();
+                request.Content = new FormUrlEncodedContent(new KeyValuePair<string, string>[] { new KeyValuePair<string, string>("data", xml) });
 
                 string result = await ProcessRequestAsync(request, responseProcessingFunc, cancellationToken: cancellationToken,
                     baseErrorMessage: string.Format("Failed updating manga entry for manga ID {0}, user {0} using url {1}", mangaId, user, userInfoUri)).ConfigureAwait(continueOnCapturedContext: false);
 
                 Logging.Log.InfoFormat("Successfully updated manga entry for manga ID {0} and user {0}", mangaId, user);
 
-                return null;
+                return result;
             }
             catch (OperationCanceledException)
             {
@@ -466,7 +456,7 @@ namespace MalApi
         /// <param name="password">Password</param>
         /// <param name="base64Credentials">base64 encrypted username and password</param>
         /// <returns></returns>
-        public string UpdateAnimeForUser(int animeId, UpdateAnimeObject updateInfo, string user, string password)
+        public string UpdateAnimeForUser(int animeId, UpdateAnime updateInfo, string user, string password)
         {
             return UpdateAnimeForUserAsync(animeId, updateInfo, user, password).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
         }
@@ -492,7 +482,7 @@ namespace MalApi
         /// <param name="password">Password</param>
         /// <param name="base64Credentials">base64 encrypted username and password</param>
         /// <returns></returns>
-        public string UpdateMangaForUser(int mangaId, UpdateMangaObject updateInfo, string user, string password)
+        public string UpdateMangaForUser(int mangaId, UpdateManga updateInfo, string user, string password)
         {
             return UpdateMangaForUserAsync(mangaId, updateInfo, user, password).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
         }

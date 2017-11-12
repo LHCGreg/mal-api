@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -25,11 +26,23 @@ namespace MalApi.Example
                 api.UserAgent = "MalApiExample";
                 api.TimeoutInMs = 15000;
 
-                var animeUpdateInfo = new UpdateAnimeObject(episode: "26", status: "2", score: "9");
-                string userLookup2 = api.UpdateAnimeForUser(1, animeUpdateInfo, "user", "pass");
+                var animeUpdateInfo = new UpdateAnime()
+                {
+                    Episode = 26,
+                    Status = AnimeCompletionStatus.Completed,
+                    Score = 9,
+                    DateStart = new DateTime(1999, 01, 02)
+                };
+                string userUpdateAnime = api.UpdateAnimeForUser(1, animeUpdateInfo, "user", "password");
 
-                var mangaUpdateInfo = new UpdateMangaObject(chapter: "20", volume: "3", score: "8");
-                string userLookup3 = api.UpdateMangaForUser(952, mangaUpdateInfo, "user", "pass");
+                var mangaUpdateInfo = new UpdateManga()
+                {
+                    Chapter = 20,
+                    Volume = 3,
+                    Score = 8,
+                    Status = MangaCompletionStatus.Completed
+                };
+                string userUpdateManga = api.UpdateMangaForUser(952, mangaUpdateInfo, "user", "password");
 
 
 

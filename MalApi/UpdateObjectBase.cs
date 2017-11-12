@@ -10,7 +10,7 @@ namespace MalApi
         /// <summary>
         /// Generates an XML with the current information stored in the object. XML can later be used to update records on MAL.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>String representation of object-generated XML.</returns>
         public string GenerateXml()
         {
             var emptyNamespace = new XmlSerializerNamespaces();
@@ -25,6 +25,7 @@ namespace MalApi
                 {
                     xmlSerializer.Serialize(xmlWriter, this, emptyNamespace);
                     xml = strWriter.ToString();
+
                     return xml;
                 }
             }
