@@ -32,7 +32,7 @@ namespace MalApi.IntegrationTests
             string password = System.Environment.GetEnvironmentVariable("IntegrationTestMalPassword");
 
             int mangaId = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestMangaId"));
-            UpdateManga updateInfo = new UpdateManga()
+            MangaUpdate updateInfo = new MangaUpdate()
             {
                 Chapter = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestChapterNumber")),
                 Score = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestScore")),
@@ -54,7 +54,7 @@ namespace MalApi.IntegrationTests
             string password = System.Environment.GetEnvironmentVariable("IntegrationTestMalPassword");
 
             int mangaId = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestMangaId"));
-            UpdateManga updateInfo = new UpdateManga()
+            MangaUpdate updateInfo = new MangaUpdate()
             {
                 Chapter = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestChapterNumber")),
                 Score = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestScore")),

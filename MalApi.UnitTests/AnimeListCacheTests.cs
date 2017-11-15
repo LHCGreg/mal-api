@@ -15,7 +15,7 @@ namespace MalApi.UnitTests
         {
             using (AnimeListCache cache = new AnimeListCache(expiration: TimeSpan.FromHours(5)))
             {
-                cache.PutListForUser("a", new MalUserLookupResults(userId: 5, canonicalUserName: "A", animeList: new List<MyAnimeListEntry>()));
+                cache.PutListForUser("a", new MalUserLookupResults(userId: 5, canonicalUserName: "A", animeList: new List<MyAnimeListEntry>(), mangaList: new List<MyMangaListEntry>()));
                 cache.GetListForUser("A", out MalUserLookupResults lookup);
                 Assert.Equal(5, lookup.UserId);
             }

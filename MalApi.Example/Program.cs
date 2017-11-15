@@ -26,16 +26,15 @@ namespace MalApi.Example
                 api.UserAgent = "MalApiExample";
                 api.TimeoutInMs = 15000;
 
-                var animeUpdateInfo = new UpdateAnime()
+                var animeUpdateInfo = new AnimeUpdate()
                 {
                     Episode = 26,
                     Status = AnimeCompletionStatus.Completed,
                     Score = 9,
-                    DateStart = new DateTime(1999, 01, 02)
                 };
                 string userUpdateAnime = api.UpdateAnimeForUser(1, animeUpdateInfo, "user", "password");
 
-                var mangaUpdateInfo = new UpdateManga()
+                var mangaUpdateInfo = new MangaUpdate()
                 {
                     Chapter = 20,
                     Volume = 3,

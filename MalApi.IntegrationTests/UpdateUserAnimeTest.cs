@@ -32,7 +32,7 @@ namespace MalApi.IntegrationTests
             string password = System.Environment.GetEnvironmentVariable("IntegrationTestMalPassword");
 
             int animeId = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestAnimeId"));
-            UpdateAnime updateInfo = new UpdateAnime()
+            AnimeUpdate updateInfo = new AnimeUpdate()
             {
                 Episode = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestEpisodeNumber")),
                 Score = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestScore")),
@@ -54,7 +54,7 @@ namespace MalApi.IntegrationTests
             string password = System.Environment.GetEnvironmentVariable("IntegrationTestMalPassword");
 
             int animeId = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestAnimeId"));
-            UpdateAnime updateInfo = new UpdateAnime()
+            AnimeUpdate updateInfo = new AnimeUpdate()
             {
                 Episode = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestEpisodeNumber")),
                 Score = int.Parse(System.Environment.GetEnvironmentVariable("IntegrationTestScore")),

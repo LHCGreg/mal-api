@@ -218,7 +218,7 @@ namespace MalApi
         /// <param name="user"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public Task<string> UpdateAnimeForUserAsync(int animeId, UpdateAnime updateInfo, string user, string password)
+        public Task<string> UpdateAnimeForUserAsync(int animeId, AnimeUpdate updateInfo, string user, string password)
         {
             return UpdateAnimeForUserAsync(animeId, updateInfo, user, password, CancellationToken.None);
         }
@@ -243,7 +243,7 @@ namespace MalApi
         /// <param name="user"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public Task<string> UpdateMangaForUserAsync(int mangaId, UpdateManga updateInfo, string user, string password)
+        public Task<string> UpdateMangaForUserAsync(int mangaId, MangaUpdate updateInfo, string user, string password)
         {
             return UpdateMangaForUserAsync(mangaId, updateInfo, user, password, CancellationToken.None);
         }
@@ -306,7 +306,7 @@ namespace MalApi
         /// <param name="user">MAL username</param>
         /// <param name="password">MAL password</param>
         /// <returns></returns>
-        public async Task<string> UpdateAnimeForUserAsync(int animeId, UpdateAnime updateInfo, string user, string password, CancellationToken cancellationToken)
+        public async Task<string> UpdateAnimeForUserAsync(int animeId, AnimeUpdate updateInfo, string user, string password, CancellationToken cancellationToken)
         {
             const string malAnimeUpdateUriFormatString = "https://myanimelist.net/api/animelist/update/{0}.xml";
 
@@ -400,7 +400,7 @@ namespace MalApi
         /// <param name="user">MAL user</param>
         /// <param name="password">MAL password</param>
         /// <returns></returns>
-        public async Task<string> UpdateMangaForUserAsync(int mangaId, UpdateManga updateInfo, string user, string password, CancellationToken cancellationToken)
+        public async Task<string> UpdateMangaForUserAsync(int mangaId, MangaUpdate updateInfo, string user, string password, CancellationToken cancellationToken)
         {
             const string malMangaUpdateUriFormatString = "https://myanimelist.net/api/mangalist/update/{0}.xml";
 
@@ -456,7 +456,7 @@ namespace MalApi
         /// <param name="password">Password</param>
         /// <param name="base64Credentials">base64 encrypted username and password</param>
         /// <returns></returns>
-        public string UpdateAnimeForUser(int animeId, UpdateAnime updateInfo, string user, string password)
+        public string UpdateAnimeForUser(int animeId, AnimeUpdate updateInfo, string user, string password)
         {
             return UpdateAnimeForUserAsync(animeId, updateInfo, user, password).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
         }
@@ -482,7 +482,7 @@ namespace MalApi
         /// <param name="password">Password</param>
         /// <param name="base64Credentials">base64 encrypted username and password</param>
         /// <returns></returns>
-        public string UpdateMangaForUser(int mangaId, UpdateManga updateInfo, string user, string password)
+        public string UpdateMangaForUser(int mangaId, MangaUpdate updateInfo, string user, string password)
         {
             return UpdateMangaForUserAsync(mangaId, updateInfo, user, password).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
         }

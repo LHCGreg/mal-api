@@ -16,6 +16,7 @@ namespace MalApi
         /// </summary>
         public string CanonicalUserName { get; private set; }
 
+        // Left for backwards compatibility
         public MalUserLookupResults(int userId, string canonicalUserName, ICollection<MyAnimeListEntry> animeList)
         {
             UserId = userId;
@@ -23,10 +24,11 @@ namespace MalApi
             AnimeList = animeList;
         }
 
-        public MalUserLookupResults(int userId, string canonicalUserName, ICollection<MyMangaListEntry> mangaList)
+        public MalUserLookupResults(int userId, string canonicalUserName, ICollection<MyAnimeListEntry> animeList, ICollection<MyMangaListEntry> mangaList)
         {
             UserId = userId;
             CanonicalUserName = canonicalUserName;
+            AnimeList = animeList;
             MangaList = mangaList;
         }
     }

@@ -25,7 +25,7 @@ namespace MalApi.UnitTests
         public void ParseWithXElementTest()
         {
             XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_clean.xml"));
-            MalUserLookupResults results = MalAppInfoXml.ParseAnimeResults(doc);
+            MalUserLookupResults results = MalAppInfoXml.ParseResults(doc);
             DoAsserts(results);
         }
 
@@ -42,9 +42,7 @@ namespace MalApi.UnitTests
         public void ParseInvalidUserWithXElementTest()
         {
             XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_no_such_user.xml"));
-            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseAnimeResults(doc));
-
-            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseMangaResults(doc));
+            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseResults(doc));
         }
 
         [Fact]
@@ -60,9 +58,7 @@ namespace MalApi.UnitTests
         public void ParseOldInvalidUserWithXElementTest()
         {
             XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_no_such_user_old.xml"));
-            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseAnimeResults(doc));
-
-            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseMangaResults(doc));
+            Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseResults(doc));
         }
 
         private void DoAsserts(MalUserLookupResults results)
