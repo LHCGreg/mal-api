@@ -90,20 +90,20 @@ namespace MalApi
             XDocument document = new XDocument(
                 new XDeclaration("1.0", "UTF-8", null),
                 new XElement("entry",
-                    new XElement("episode", Episode),
-                    new XElement("status", (int?)Status),
-                    new XElement("score", Score),
-                    new XElement("storage_type", StorageType),
-                    new XElement("storage_value", StorageValue),
-                    new XElement("times_rewatched", TimesRewatched),
-                    new XElement("rewatch_value", RewatchValue),
-                    new XElement("date_start", FormattedDateStart),
-                    new XElement("date_finish", FormattedDateFinish),
-                    new XElement("priority", Priority),
-                    new XElement("enable_discussion", EnableDiscussion),
-                    new XElement("enable_rewatching", EnableRewatching),
-                    new XElement("comments", Comments),
-                    new XElement("tags", Tags)
+                    Episode != null ? new XElement("episode", Episode) : null,
+                    Status != null ? new XElement("status", (int?)Status) : null,
+                    Score != null ? new XElement("score", Score) : null,
+                    StorageType != null ? new XElement("storage_type", StorageType) : null,
+                    StorageValue != null ? new XElement("storage_value", StorageValue) : null,
+                    TimesRewatched != null ? new XElement("times_rewatched", TimesRewatched) : null,
+                    RewatchValue != null ? new XElement("rewatch_value", RewatchValue) : null,
+                    FormattedDateStart != null ? new XElement("date_start", FormattedDateStart) : null,
+                    FormattedDateFinish != null ? new XElement("date_finish", FormattedDateFinish) : null,
+                    Priority != null ? new XElement("priority", Priority) : null,
+                    EnableDiscussion != null ? new XElement("enable_discussion", EnableDiscussion) : null,
+                    EnableRewatching != null ? new XElement("enable_rewatching", EnableRewatching) : null,
+                    Comments != null ? new XElement("comments", Comments) : null,
+                    Tags != null ? new XElement("tags", Tags) : null
                 )
             );
 

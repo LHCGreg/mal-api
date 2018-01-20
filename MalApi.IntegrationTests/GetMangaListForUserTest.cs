@@ -14,15 +14,9 @@ namespace MalApi.IntegrationTests
     public class GetMangaListForUserTest
     {
         [Fact]
-        public static void Initialize()
-        {
-            System.Environment.SetEnvironmentVariable("IntegrationTestMalUsername", "username");
-        }
-
-        [Fact]
         public void GetMangaListForUser()
         {
-            string username = System.Environment.GetEnvironmentVariable("IntegrationTestMalUsername");
+            string username = "naps250";
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
                 MalUserLookupResults userLookup = api.GetMangaListForUser(username);
@@ -34,7 +28,7 @@ namespace MalApi.IntegrationTests
         [Fact]
         public void GetMangaListForUserCanceled()
         {
-            string username = System.Environment.GetEnvironmentVariable("IntegrationTestMalUsername");
+            string username = "naps250";
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
                 CancellationTokenSource tokenSource = new CancellationTokenSource();

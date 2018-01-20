@@ -93,21 +93,21 @@ namespace MalApi
             XDocument document = new XDocument(
                 new XDeclaration("1.0", "UTF-8", null),
                 new XElement("entry",
-                    new XElement("chapter", Chapter),
-                    new XElement("volume", Volume),
-                    new XElement("status", (int?)Status),
-                    new XElement("score", Score),
-                    new XElement("times_reread", TimesReread),
-                    new XElement("reread_value", RereadValue),
-                    new XElement("date_start", FormattedDateStart),
-                    new XElement("date_finish", FormattedDateFinish),
-                    new XElement("priority", Priority),
-                    new XElement("enable_discussion", EnableDiscussion),
-                    new XElement("enable_rereading", EnableRereading),
-                    new XElement("comments", Comments),
-                    new XElement("scan_group", ScanGroup),
-                    new XElement("tags", Tags),
-                    new XElement("retail_volumes", RetailVolumes)
+                    Chapter != null ? new XElement("chapter", Chapter) : null,
+                    Volume != null ? new XElement("volume", Volume) : null,
+                    Status != null ? new XElement("status", (int?)Status) : null,
+                    Score != null ? new XElement("score", Score) : null,
+                    TimesReread != null ? new XElement("times_reread", TimesReread) : null,
+                    RereadValue != null ? new XElement("reread_value", RereadValue) : null,
+                    FormattedDateStart != null ? new XElement("date_start", FormattedDateStart) : null,
+                    FormattedDateFinish != null ? new XElement("date_finish", FormattedDateFinish) : null,
+                    Priority != null ? new XElement("priority", Priority) : null,
+                    EnableDiscussion != null ? new XElement("enable_discussion", EnableDiscussion) : null,
+                    EnableRereading != null ? new XElement("enable_rereading", EnableRereading) : null,
+                    Comments != null ? new XElement("comments", Comments) : null,
+                    // ScanGroup != null ? new XElement("scan_group", ScanGroup) : null,
+                    Tags != null ? new XElement("tags", Tags) : null,
+                    RetailVolumes != null ? new XElement("retail_volumes", RetailVolumes) : null
                 )
             );
 

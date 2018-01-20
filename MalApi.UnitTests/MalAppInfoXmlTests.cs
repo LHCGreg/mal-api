@@ -14,19 +14,37 @@ namespace MalApi.UnitTests
         [Fact]
         public void ParseWithTextReaderTest()
         {
-            using (TextReader reader = Helpers.GetResourceStream("test.xml"))
+            using (TextReader reader = Helpers.GetResourceStream("test_anime.xml"))
             {
                 MalUserLookupResults results = MalAppInfoXml.Parse(reader);
-                DoAsserts(results);
+                DoAnimeAsserts(results);
             }
         }
 
         [Fact]
-        public void ParseWithXElementTest()
+        public void ParseWithTextReaderMangaTest()
         {
-            XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_clean.xml"));
+            using (TextReader reader = Helpers.GetResourceStream("test_manga.xml"))
+            {
+                MalUserLookupResults results = MalAppInfoXml.Parse(reader);
+                DoMangaAsserts(results);
+            }
+        }
+
+        [Fact]
+        public void ParseWithXElementAnimeTest()
+        {
+            XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_anime_clean.xml"));
             MalUserLookupResults results = MalAppInfoXml.ParseResults(doc);
-            DoAsserts(results);
+            DoAnimeAsserts(results);
+        }
+
+        [Fact]
+        public void ParseWithXElementMangaTest()
+        {
+            XDocument doc = XDocument.Parse(Helpers.GetResourceText("test_manga_clean.xml"));
+            MalUserLookupResults results = MalAppInfoXml.ParseResults(doc);
+            DoMangaAsserts(results);
         }
 
         [Fact]
@@ -61,7 +79,7 @@ namespace MalApi.UnitTests
             Assert.Throws<MalUserNotFoundException>(() => MalAppInfoXml.ParseResults(doc));
         }
 
-        private void DoAsserts(MalUserLookupResults results)
+        private void DoAnimeAsserts(MalUserLookupResults results)
         {
             Assert.Equal("LordHighCaptain", results.CanonicalUserName);
             Assert.Equal(158667, results.UserId);
@@ -105,6 +123,51 @@ namespace MalApi.UnitTests
             Assert.Equal(new DateTime(year: 2011, month: 4, day: 2, hour: 22, minute: 50, second: 58, kind: DateTimeKind.Utc), entry.MyLastUpdate);
             Assert.Equal(new List<string>() { "test&test", "< less than", "> greater than", "apos '", "quote \"", "hex ö", "dec !", "control character" }, entry.Tags);
 
+        }
+
+        private void DoMangaAsserts(MalUserLookupResults results)
+        {
+            Assert.Equal("naps250", results.CanonicalUserName);
+            Assert.Equal(5544903, results.UserId);
+            Assert.Equal(6, results.MangaList.Count);
+
+            MyMangaListEntry entry = results.MangaList.Where(manga => manga.MangaInfo.MangaId == 2).First();
+            Assert.Equal("Berserk", entry.MangaInfo.Title);
+            Assert.Equal(MalMangaType.Manga, entry.MangaInfo.Type);
+            entry.MangaInfo.Synonyms.Should().BeEquivalentTo(new List<string>() { "Berserk: The Prototype" });
+
+            Assert.Equal(352, entry.NumChaptersRead);
+            Assert.Equal(10, entry.Score);
+            Assert.Equal(MangaCompletionStatus.Reading, entry.Status);
+
+            // Test tags with Equal, not equivalent, because order in tags matters
+            Assert.Equal(new List<string>() { "CLANG", "Miura pls" }, entry.Tags);
+
+            entry = results.MangaList.Where(manga => manga.MangaInfo.MangaId == 9115).First();
+            Assert.Equal("Ookami to Koushinryou", entry.MangaInfo.Title);
+            Assert.Equal(MalMangaType.Novel, entry.MangaInfo.Type);
+            entry.MangaInfo.Synonyms.Should().BeEquivalentTo(new List<string>() { "Okami to Koshinryo", "Spice and Wolf", "Spice & Wolf" });
+            Assert.Equal((decimal?)null, entry.Score);
+            Assert.Equal(0, entry.NumChaptersRead);
+            Assert.Equal(MangaCompletionStatus.Completed, entry.Status);
+            Assert.Equal(new List<string>(), entry.Tags);
+
+            entry = results.MangaList.Where(manga => manga.MangaInfo.MangaId == 1).First();
+            Assert.Equal("Monster", entry.MangaInfo.Title);
+
+            // Make sure synonyms that are the same as the real name get filtered out
+            entry.MangaInfo.Synonyms.Should().BeEquivalentTo(new List<string>());
+
+            entry = results.MangaList.Where(manga => manga.MangaInfo.Title == "Test").First();
+            // Make sure that <series_synonyms/> is the same as <series_synonyms></series_synonyms>
+            entry.MangaInfo.Synonyms.Should().BeEquivalentTo(new List<string>());
+            Assert.Equal(new UncertainDate(2010, 2, 6), entry.MangaInfo.StartDate);
+            Assert.Equal(UncertainDate.Unknown, entry.MangaInfo.EndDate);
+            Assert.Equal("https://myanimelist.cdn-dena.com/images/manga/2/159423.jpg", entry.MangaInfo.ImageUrl);
+            Assert.Equal(new UncertainDate(year: null, month: 2, day: null), entry.MyStartDate);
+            Assert.Equal(UncertainDate.Unknown, entry.MyFinishDate);
+            Assert.Equal(new DateTime(year: 2011, month: 4, day: 2, hour: 22, minute: 50, second: 58, kind: DateTimeKind.Utc), entry.MyLastUpdate);
+            Assert.Equal(new List<string>() { "test&test", "< less than", "> greater than", "apos '", "quote \"", "hex ö", "dec !", "control character" }, entry.Tags);
         }
     }
 }

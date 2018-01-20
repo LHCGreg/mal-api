@@ -10,9 +10,13 @@
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="test.xml" />
-    <None Remove="test_clean.xml" />
+    <None Remove="Cowboy_Bebop.htm" />
+    <None Remove="Monster.htm" />
+    <None Remove="test_anime.xml" />
+    <None Remove="test_anime_clean.xml" />
     <None Remove="test_error.xml" />
+    <None Remove="test_manga.xml" />
+    <None Remove="test_manga_clean.xml" />
     <None Remove="test_no_such_user.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -31,10 +35,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Cowboy_Bebop.htm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Eureka_Seven.htm" />
-    <EmbeddedResource Include="test.xml" />
-    <EmbeddedResource Include="test_clean.xml" />
+    <EmbeddedResource Include="Monster.htm" />
+    <EmbeddedResource Include="test_anime.xml" />
+    <EmbeddedResource Include="test_anime_clean.xml" />
     <EmbeddedResource Include="test_error.xml" />
+    <EmbeddedResource Include="test_manga.xml" />
+    <EmbeddedResource Include="test_manga_clean.xml" />
     <EmbeddedResource Include="test_no_such_user.xml" />
     <EmbeddedResource Include="test_no_such_user_old.xml" />
   </ItemGroup>
