@@ -10,3 +10,5 @@ Steps to set up environmental variables:
 2) Add two new user variables called 'MAL_USERNAME' and 'MAL_PASSWORD' with the appropriate values for the account you wish to be used with these tests.
 
 3) Done! Go run the tests and see if everything's OK.
+
+If the scraping methods in the integration test project are changed (ScrapeUserAnimeDetailsFromHtml and ScrapeUserMangaDetailsFromHtml) be sure to also update them in the unit test project (MalDetailScrapingUtils.cs).

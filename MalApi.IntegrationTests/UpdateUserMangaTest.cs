@@ -8,8 +8,6 @@ using Xunit;
 
 namespace MalApi.IntegrationTests
 {
-    // Environment variables in the Initialize method have to be set up properly
-    // In order for the test to succeed they need to be executed at the same (so the Environment variable can be set and used).
     public class UpdateUserMangaTest
     {
         [Fact]
@@ -59,60 +57,66 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, baseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, baseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(baseInfo.Chapter, baseReults.Chapter);
-                Assert.Equal(baseInfo.Volume, baseReults.Volume);
-                Assert.Equal(baseInfo.Status, baseReults.Status);
-                Assert.Equal(baseInfo.Score, baseReults.Score);
-                Assert.Equal(baseInfo.TimesReread, baseReults.TimesReread);
-                Assert.Equal(baseInfo.RereadValue, baseReults.RereadValue);
-                Assert.Equal(baseInfo.DateStart, baseReults.DateStart);
-                Assert.Equal(baseInfo.DateFinish, baseReults.DateFinish);
-                Assert.Equal(baseInfo.Priority, baseReults.Priority);
-                Assert.Equal(baseInfo.EnableDiscussion, baseReults.EnableDiscussion);
-                Assert.Equal(baseInfo.EnableRereading, baseReults.EnableRereading);
-                Assert.Equal(baseInfo.Comments, baseReults.Comments);
-                Assert.Equal(baseInfo.Tags, baseReults.Tags);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, updateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(baseInfo.Chapter, baseReults.Chapter);
+                    Assert.Equal(baseInfo.Volume, baseReults.Volume);
+                    Assert.Equal(baseInfo.Status, baseReults.Status);
+                    Assert.Equal(baseInfo.Score, baseReults.Score);
+                    Assert.Equal(baseInfo.TimesReread, baseReults.TimesReread);
+                    Assert.Equal(baseInfo.RereadValue, baseReults.RereadValue);
+                    Assert.Equal(baseInfo.DateStart, baseReults.DateStart);
+                    Assert.Equal(baseInfo.DateFinish, baseReults.DateFinish);
+                    Assert.Equal(baseInfo.Priority, baseReults.Priority);
+                    Assert.Equal(baseInfo.EnableDiscussion, baseReults.EnableDiscussion);
+                    Assert.Equal(baseInfo.EnableRereading, baseReults.EnableRereading);
+                    Assert.Equal(baseInfo.Comments, baseReults.Comments);
+                    Assert.Equal(baseInfo.Tags, baseReults.Tags);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, updateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(updateInfo.Chapter, updatedResults.Chapter);
-                Assert.Equal(updateInfo.Volume, updatedResults.Volume);
-                Assert.Equal(updateInfo.Status, updatedResults.Status);
-                Assert.Equal(updateInfo.Score, updatedResults.Score);
-                Assert.Equal(updateInfo.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(updateInfo.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(updateInfo.DateStart, updatedResults.DateStart);
-                Assert.Equal(updateInfo.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(updateInfo.Priority, updatedResults.Priority);
-                Assert.Equal(updateInfo.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(updateInfo.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(updateInfo.Comments, updatedResults.Comments);
-                Assert.Equal(updateInfo.Tags, updatedResults.Tags);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert all values have been changed
-                Assert.NotEqual(baseReults.Chapter, updatedResults.Chapter);
-                Assert.NotEqual(baseReults.Volume, updatedResults.Volume);
-                Assert.NotEqual(baseReults.Status, updatedResults.Status);
-                Assert.NotEqual(baseReults.Score, updatedResults.Score);
-                Assert.NotEqual(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.NotEqual(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.NotEqual(baseReults.DateStart, updatedResults.DateStart);
-                Assert.NotEqual(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.NotEqual(baseReults.Priority, updatedResults.Priority);
-                Assert.NotEqual(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.NotEqual(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.NotEqual(baseReults.Comments, updatedResults.Comments);
-                Assert.NotEqual(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(updateInfo.Chapter, updatedResults.Chapter);
+                    Assert.Equal(updateInfo.Volume, updatedResults.Volume);
+                    Assert.Equal(updateInfo.Status, updatedResults.Status);
+                    Assert.Equal(updateInfo.Score, updatedResults.Score);
+                    Assert.Equal(updateInfo.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(updateInfo.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(updateInfo.DateStart, updatedResults.DateStart);
+                    Assert.Equal(updateInfo.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(updateInfo.Priority, updatedResults.Priority);
+                    Assert.Equal(updateInfo.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(updateInfo.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(updateInfo.Comments, updatedResults.Comments);
+                    Assert.Equal(updateInfo.Tags, updatedResults.Tags);
+
+                    // Assert all values have been changed
+                    Assert.NotEqual(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.NotEqual(baseReults.Volume, updatedResults.Volume);
+                    Assert.NotEqual(baseReults.Status, updatedResults.Status);
+                    Assert.NotEqual(baseReults.Score, updatedResults.Score);
+                    Assert.NotEqual(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.NotEqual(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.NotEqual(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.NotEqual(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.NotEqual(baseReults.Priority, updatedResults.Priority);
+                    Assert.NotEqual(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.NotEqual(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.NotEqual(baseReults.Comments, updatedResults.Comments);
+                    Assert.NotEqual(baseReults.Tags, updatedResults.Tags);
+
+                }
             }
         }
 
@@ -137,36 +141,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Chapter, baseReults.Chapter);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Chapter, baseReults.Chapter);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Chapter, updatedResults.Chapter);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the chapter has been changed
-                Assert.NotEqual(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Chapter, updatedResults.Chapter);
+
+                    // Assert that only the chapter has been changed
+                    Assert.NotEqual(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -191,36 +200,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Volume, baseReults.Volume);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Volume, baseReults.Volume);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Volume, updatedResults.Volume);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the volume has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.NotEqual(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Volume, updatedResults.Volume);
+
+                    // Assert that only the volume has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.NotEqual(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -245,36 +259,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Status, baseReults.Status);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Status, baseReults.Status);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Status, updatedResults.Status);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the status has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.NotEqual(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Status, updatedResults.Status);
+
+                    // Assert that only the status has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.NotEqual(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -299,36 +318,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Score, baseReults.Score);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Score, baseReults.Score);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Score, updatedResults.Score);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the score has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.NotEqual(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Score, updatedResults.Score);
+
+                    // Assert that only the score has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.NotEqual(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -353,36 +377,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.TimesReread, baseReults.TimesReread);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.TimesReread, baseReults.TimesReread);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.TimesReread, updatedResults.TimesReread);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the times reread has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.NotEqual(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.TimesReread, updatedResults.TimesReread);
+
+                    // Assert that only the times reread has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.NotEqual(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -407,36 +436,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.RereadValue, baseReults.RereadValue);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.RereadValue, baseReults.RereadValue);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.RereadValue, updatedResults.RereadValue);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the rearead value has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.NotEqual(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.RereadValue, updatedResults.RereadValue);
+
+                    // Assert that only the rearead value has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.NotEqual(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -461,36 +495,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.DateStart, baseReults.DateStart);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.DateStart, baseReults.DateStart);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.DateStart, updatedResults.DateStart);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the date start has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.NotEqual(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.DateStart, updatedResults.DateStart);
+
+                    // Assert that only the date start has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.NotEqual(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -515,36 +554,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.DateFinish, baseReults.DateFinish);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.DateFinish, baseReults.DateFinish);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.DateFinish, updatedResults.DateFinish);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the date finish has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.NotEqual(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.DateFinish, updatedResults.DateFinish);
+
+                    // Assert that only the date finish has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.NotEqual(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -569,36 +613,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Priority, baseReults.Priority);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Priority, baseReults.Priority);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Priority, updatedResults.Priority);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the priority has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.NotEqual(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Priority, updatedResults.Priority);
+
+                    // Assert that only the priority has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.NotEqual(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -623,36 +672,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.EnableDiscussion, baseReults.EnableDiscussion);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.EnableDiscussion, baseReults.EnableDiscussion);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.EnableDiscussion, updatedResults.EnableDiscussion);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the enable discussion has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.NotEqual(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.EnableDiscussion, updatedResults.EnableDiscussion);
+
+                    // Assert that only the enable discussion has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.NotEqual(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -677,36 +731,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.EnableRereading, baseReults.EnableRereading);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.EnableRereading, baseReults.EnableRereading);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.EnableRereading, updatedResults.EnableRereading);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the enable rereading has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.NotEqual(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.EnableRereading, updatedResults.EnableRereading);
+
+                    // Assert that only the enable rereading has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.NotEqual(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -731,36 +790,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Comments, baseReults.Comments);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Comments, baseReults.Comments);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Comments, updatedResults.Comments);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the comments has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.NotEqual(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Comments, updatedResults.Comments);
+
+                    // Assert that only the comments has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.NotEqual(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -785,36 +849,41 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
+                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Tags, baseReults.Tags);
+                    MangaUpdate baseReults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Tags, baseReults.Tags);
 
-                MangaUpdate updatedResults = api.GetUserMangaDetails(username, password, mangaId);
+                    result = api.UpdateMangaForUser(mangaId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Tags, updatedResults.Tags);
+                    MangaUpdate updatedResults = helper.GetUserMangaDetailsAsync(username, mangaId);
 
-                // Assert that only the tags has been changed
-                Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
-                Assert.Equal(baseReults.Volume, updatedResults.Volume);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
-                Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.NotEqual(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Tags, updatedResults.Tags);
+
+                    // Assert that only the tags has been changed
+                    Assert.Equal(baseReults.Chapter, updatedResults.Chapter);
+                    Assert.Equal(baseReults.Volume, updatedResults.Volume);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.TimesReread, updatedResults.TimesReread);
+                    Assert.Equal(baseReults.RereadValue, updatedResults.RereadValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRereading, updatedResults.EnableRereading);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.NotEqual(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -848,7 +917,8 @@ namespace MalApi.IntegrationTests
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
-                Task<string> userLookupTask = api.UpdateMangaForUserAsync(mangaId, updateInfo, username, password, tokenSource.Token);
+                Task<string> userLookupTask =
+                    api.UpdateMangaForUserAsync(mangaId, updateInfo, username, password, tokenSource.Token);
                 tokenSource.Cancel();
                 Assert.Throws<TaskCanceledException>(() => userLookupTask.GetAwaiter().GetResult());
             }
@@ -869,32 +939,37 @@ namespace MalApi.IntegrationTests
                 Chapter = 1
             };
 
-            MangaUpdate partialUpdateInfo = new MangaUpdate()
+            using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                Chapter = 162
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
+                {
+                    Assert.Throws<MalApiRequestException>(() => helper.Login(username, password));
+
+                    Assert.Throws<MalApiRequestException>(() => api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password));
+                }
+            }
+        }
+
+        [Fact]
+        public void WrongMangaIdUpdateTest()
+        {
+            string username = System.Environment.GetEnvironmentVariable("MAL_USERNAME");
+            string password = System.Environment.GetEnvironmentVariable("MAL_PASSWORD");
+
+            int mangaId = 5;
+
+            MangaUpdate partialBaseInfo = new MangaUpdate()
+            {
+                Chapter = 1
             };
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                try
+                using (GetUserMangaDetailsTest helper = new GetUserMangaDetailsTest())
                 {
-                    string result = api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password);
+                    helper.Login(username, password);
 
-                }
-                catch (Exception ex)
-                {
-                    Assert.Equal(typeof(MalApiRequestException), ex.GetType());
-                }
-
-                try
-                {
-                    MangaUpdate baseReults = api.GetUserMangaDetails(username, password, mangaId);
-
-                }
-                catch (Exception ex)
-                {
-                    Assert.Equal(typeof(MalApiRequestException), ex.GetType());
-                    Assert.Equal("Failed to log in. Recheck credentials.", ex.Message);
+                    Assert.Throws<MalApiRequestException>(() => api.UpdateMangaForUser(mangaId, partialBaseInfo, username, password));
                 }
             }
         }

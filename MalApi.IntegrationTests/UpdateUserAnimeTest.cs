@@ -8,8 +8,6 @@ using Xunit;
 
 namespace MalApi.IntegrationTests
 {
-    // Environment variables in the Initialize method have to be set up properly
-    // In order for the test to succeed they need to be executed at the same (so the Environment variable can be set and used).
     public class UpdateUserAnimeTest
     {
         [Fact]
@@ -59,63 +57,68 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, baseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, baseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(baseInfo.Episode, baseReults.Episode);
-                Assert.Equal(baseInfo.Status, baseReults.Status);
-                Assert.Equal(baseInfo.Score, baseReults.Score);
-                Assert.Equal(baseInfo.StorageType, baseReults.StorageType);
-                Assert.Equal(baseInfo.StorageValue, baseReults.StorageValue);
-                Assert.Equal(baseInfo.TimesRewatched, baseReults.TimesRewatched);
-                Assert.Equal(baseInfo.RewatchValue, baseReults.RewatchValue);
-                Assert.Equal(baseInfo.DateStart, baseReults.DateStart);
-                Assert.Equal(baseInfo.DateFinish, baseReults.DateFinish);
-                Assert.Equal(baseInfo.Priority, baseReults.Priority);
-                Assert.Equal(baseInfo.EnableDiscussion, baseReults.EnableDiscussion);
-                Assert.Equal(baseInfo.EnableRewatching, baseReults.EnableRewatching);
-                Assert.Equal(baseInfo.Comments, baseReults.Comments);
-                Assert.Equal(baseInfo.Tags, baseReults.Tags);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                result = api.UpdateAnimeForUser(animeId, updateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    // Assert first update against base info
+                    Assert.Equal(baseInfo.Episode, baseReults.Episode);
+                    Assert.Equal(baseInfo.Status, baseReults.Status);
+                    Assert.Equal(baseInfo.Score, baseReults.Score);
+                    Assert.Equal(baseInfo.StorageType, baseReults.StorageType);
+                    Assert.Equal(baseInfo.StorageValue, baseReults.StorageValue);
+                    Assert.Equal(baseInfo.TimesRewatched, baseReults.TimesRewatched);
+                    Assert.Equal(baseInfo.RewatchValue, baseReults.RewatchValue);
+                    Assert.Equal(baseInfo.DateStart, baseReults.DateStart);
+                    Assert.Equal(baseInfo.DateFinish, baseReults.DateFinish);
+                    Assert.Equal(baseInfo.Priority, baseReults.Priority);
+                    Assert.Equal(baseInfo.EnableDiscussion, baseReults.EnableDiscussion);
+                    Assert.Equal(baseInfo.EnableRewatching, baseReults.EnableRewatching);
+                    Assert.Equal(baseInfo.Comments, baseReults.Comments);
+                    Assert.Equal(baseInfo.Tags, baseReults.Tags);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    result = api.UpdateAnimeForUser(animeId, updateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert second update with update info
-                Assert.Equal(updateInfo.Episode, updatedResults.Episode);
-                Assert.Equal(updateInfo.Status, updatedResults.Status);
-                Assert.Equal(updateInfo.Score, updatedResults.Score);
-                Assert.Equal(updateInfo.StorageType, updatedResults.StorageType);
-                Assert.Equal(updateInfo.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(updateInfo.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(updateInfo.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(updateInfo.DateStart, updatedResults.DateStart);
-                Assert.Equal(updateInfo.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(updateInfo.Priority, updatedResults.Priority);
-                Assert.Equal(updateInfo.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(updateInfo.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(updateInfo.Comments, updatedResults.Comments);
-                Assert.Equal(updateInfo.Tags, updatedResults.Tags);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert all values have been changed
-                Assert.NotEqual(baseReults.Episode, updatedResults.Episode);
-                Assert.NotEqual(baseReults.Status, updatedResults.Status);
-                Assert.NotEqual(baseReults.Score, updatedResults.Score);
-                Assert.NotEqual(baseReults.StorageType, updatedResults.StorageType);
-                Assert.NotEqual(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.NotEqual(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.NotEqual(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.NotEqual(baseReults.DateStart, updatedResults.DateStart);
-                Assert.NotEqual(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.NotEqual(baseReults.Priority, updatedResults.Priority);
-                Assert.NotEqual(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.NotEqual(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.NotEqual(baseReults.Comments, updatedResults.Comments);
-                Assert.NotEqual(baseReults.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(updateInfo.Episode, updatedResults.Episode);
+                    Assert.Equal(updateInfo.Status, updatedResults.Status);
+                    Assert.Equal(updateInfo.Score, updatedResults.Score);
+                    Assert.Equal(updateInfo.StorageType, updatedResults.StorageType);
+                    Assert.Equal(updateInfo.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(updateInfo.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(updateInfo.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(updateInfo.DateStart, updatedResults.DateStart);
+                    Assert.Equal(updateInfo.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(updateInfo.Priority, updatedResults.Priority);
+                    Assert.Equal(updateInfo.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(updateInfo.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(updateInfo.Comments, updatedResults.Comments);
+                    Assert.Equal(updateInfo.Tags, updatedResults.Tags);
+
+                    // Assert all values have been changed
+                    Assert.NotEqual(baseReults.Episode, updatedResults.Episode);
+                    Assert.NotEqual(baseReults.Status, updatedResults.Status);
+                    Assert.NotEqual(baseReults.Score, updatedResults.Score);
+                    Assert.NotEqual(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.NotEqual(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.NotEqual(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.NotEqual(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.NotEqual(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.NotEqual(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.NotEqual(baseReults.Priority, updatedResults.Priority);
+                    Assert.NotEqual(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.NotEqual(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.NotEqual(baseReults.Comments, updatedResults.Comments);
+                    Assert.NotEqual(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -140,38 +143,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Episode, baseReults.Episode);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Episode, baseReults.Episode);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Episode, updatedResults.Episode);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Episode, updatedResults.Episode);
 
-                // Assert that only the episode has been changed
-                Assert.NotEqual(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the episode has been changed
+                    Assert.NotEqual(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -196,38 +204,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Status, baseReults.Status);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Status, baseReults.Status);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Status, updatedResults.Status);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Status, updatedResults.Status);
 
-                // Assert that only the status has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.NotEqual(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the status has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.NotEqual(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -252,38 +265,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Score, baseReults.Score);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Score, baseReults.Score);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Score, updatedResults.Score);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Score, updatedResults.Score);
 
-                // Assert that only the score has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.NotEqual(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the score has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.NotEqual(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -308,38 +326,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.StorageType, baseReults.StorageType);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.StorageType, baseReults.StorageType);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.StorageType, updatedResults.StorageType);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.StorageType, updatedResults.StorageType);
 
-                // Assert that only the storage type has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.NotEqual(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the storage type has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.NotEqual(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -364,38 +387,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.StorageValue, baseReults.StorageValue);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.StorageValue, baseReults.StorageValue);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.StorageValue, updatedResults.StorageValue);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.StorageValue, updatedResults.StorageValue);
 
-                // Assert that only the storage value has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.NotEqual(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the storage value has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.NotEqual(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -420,38 +448,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.TimesRewatched, baseReults.TimesRewatched);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.TimesRewatched, baseReults.TimesRewatched);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.TimesRewatched, updatedResults.TimesRewatched);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.TimesRewatched, updatedResults.TimesRewatched);
 
-                // Assert that only the times rewatched has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.NotEqual(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the times rewatched has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.NotEqual(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -476,38 +509,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.RewatchValue, baseReults.RewatchValue);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.RewatchValue, baseReults.RewatchValue);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.RewatchValue, updatedResults.RewatchValue);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.RewatchValue, updatedResults.RewatchValue);
 
-                // Assert that only the rewatch value has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.NotEqual(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the rewatch value has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.NotEqual(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -532,38 +570,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.DateStart, baseReults.DateStart);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.DateStart, baseReults.DateStart);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.DateStart, updatedResults.DateStart);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.DateStart, updatedResults.DateStart);
 
-                // Assert that only the date start has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.NotEqual(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the date start has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.NotEqual(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -577,7 +620,7 @@ namespace MalApi.IntegrationTests
             int animeId = 1;
 
             AnimeUpdate partialBaseInfo = new AnimeUpdate()
-            { 
+            {
                 DateFinish = new DateTime(2017, 10, 5)
             };
 
@@ -588,38 +631,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.DateFinish, baseReults.DateFinish);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.DateFinish, baseReults.DateFinish);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.DateFinish, updatedResults.DateFinish);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.DateFinish, updatedResults.DateFinish);
 
-                // Assert that only the date finish has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.NotEqual(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the date finish has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.NotEqual(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -644,38 +692,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Priority, baseReults.Priority);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Priority, baseReults.Priority);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Priority, updatedResults.Priority);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Priority, updatedResults.Priority);
 
-                // Assert that only the priority has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.NotEqual(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the priority has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.NotEqual(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -700,38 +753,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.EnableDiscussion, baseReults.EnableDiscussion);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.EnableDiscussion, baseReults.EnableDiscussion);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.EnableDiscussion, updatedResults.EnableDiscussion);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.EnableDiscussion, updatedResults.EnableDiscussion);
 
-                // Assert that only the enable discussion has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.NotEqual(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the enable discussion has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.NotEqual(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -756,38 +814,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.EnableRewatching, baseReults.EnableRewatching);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.EnableRewatching, baseReults.EnableRewatching);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.EnableRewatching, updatedResults.EnableRewatching);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.EnableRewatching, updatedResults.EnableRewatching);
 
-                // Assert that only the enable rewatching has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.NotEqual(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the enable rewatching has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.NotEqual(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -812,38 +875,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Comments, baseReults.Comments);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Comments, baseReults.Comments);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Comments, updatedResults.Comments);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Comments, updatedResults.Comments);
 
-                // Assert that only the comments has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.NotEqual(baseReults.Comments, updatedResults.Comments);
-                Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the comments has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.NotEqual(baseReults.Comments, updatedResults.Comments);
+                    Assert.Equal(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -868,38 +936,43 @@ namespace MalApi.IntegrationTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
-                Assert.Equal("Updated", result);
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    helper.Login(username, password);
 
-                AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                // Assert first update against base info
-                Assert.Equal(partialBaseInfo.Tags, baseReults.Tags);
+                    AnimeUpdate baseReults = helper.GetUserAnimeDetailsAsync(username, animeId);
+
+                    // Assert first update against base info
+                    Assert.Equal(partialBaseInfo.Tags, baseReults.Tags);
 
 
-                result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
-                Assert.Equal("Updated", result);
+                    result = api.UpdateAnimeForUser(animeId, partialUpdateInfo, username, password);
+                    Assert.Equal("Updated", result);
 
-                AnimeUpdate updatedResults = api.GetUserAnimeDetails(username, password, animeId);
+                    AnimeUpdate updatedResults = helper.GetUserAnimeDetailsAsync(username, animeId);
 
-                // Assert second update with update info
-                Assert.Equal(partialUpdateInfo.Tags, updatedResults.Tags);
+                    // Assert second update with update info
+                    Assert.Equal(partialUpdateInfo.Tags, updatedResults.Tags);
 
-                // Assert that only the tags has been changed
-                Assert.Equal(baseReults.Episode, updatedResults.Episode);
-                Assert.Equal(baseReults.Status, updatedResults.Status);
-                Assert.Equal(baseReults.Score, updatedResults.Score);
-                Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
-                Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
-                Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
-                Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
-                Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
-                Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
-                Assert.Equal(baseReults.Priority, updatedResults.Priority);
-                Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
-                Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
-                Assert.Equal(baseReults.Comments, updatedResults.Comments);
-                Assert.NotEqual(baseReults.Tags, updatedResults.Tags);
+                    // Assert that only the tags has been changed
+                    Assert.Equal(baseReults.Episode, updatedResults.Episode);
+                    Assert.Equal(baseReults.Status, updatedResults.Status);
+                    Assert.Equal(baseReults.Score, updatedResults.Score);
+                    Assert.Equal(baseReults.StorageType, updatedResults.StorageType);
+                    Assert.Equal(baseReults.StorageValue, updatedResults.StorageValue);
+                    Assert.Equal(baseReults.TimesRewatched, updatedResults.TimesRewatched);
+                    Assert.Equal(baseReults.RewatchValue, updatedResults.RewatchValue);
+                    Assert.Equal(baseReults.DateStart, updatedResults.DateStart);
+                    Assert.Equal(baseReults.DateFinish, updatedResults.DateFinish);
+                    Assert.Equal(baseReults.Priority, updatedResults.Priority);
+                    Assert.Equal(baseReults.EnableDiscussion, updatedResults.EnableDiscussion);
+                    Assert.Equal(baseReults.EnableRewatching, updatedResults.EnableRewatching);
+                    Assert.Equal(baseReults.Comments, updatedResults.Comments);
+                    Assert.NotEqual(baseReults.Tags, updatedResults.Tags);
+                }
             }
         }
 
@@ -933,7 +1006,8 @@ namespace MalApi.IntegrationTests
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
-                Task<string> userLookupTask = api.UpdateAnimeForUserAsync(animeId, updateInfo, username, password, tokenSource.Token);
+                Task<string> userLookupTask =
+                    api.UpdateAnimeForUserAsync(animeId, updateInfo, username, password, tokenSource.Token);
                 tokenSource.Cancel();
                 Assert.Throws<TaskCanceledException>(() => userLookupTask.GetAwaiter().GetResult());
             }
@@ -954,32 +1028,61 @@ namespace MalApi.IntegrationTests
                 Episode = 1
             };
 
-            AnimeUpdate partialUpdateInfo = new AnimeUpdate()
+            using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                Episode = 26
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
+                {
+                    Assert.Throws<MalApiRequestException>(() => helper.Login(username, password));
+
+                    Assert.Throws<MalApiRequestException>(() => api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password));
+                }
+            }
+        }
+
+        [Fact]
+        public void WrongAnimeIdUpdateTest()
+        {
+            string username = System.Environment.GetEnvironmentVariable("MAL_USERNAME");
+            string password = System.Environment.GetEnvironmentVariable("MAL_PASSWORD");
+
+            int animeId = 2;
+
+            AnimeUpdate partialBaseInfo = new AnimeUpdate()
+            {
+                Episode = 1
             };
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                try
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
                 {
-                    string result = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
+                    helper.Login(username, password);
 
+                    Assert.Throws<MalApiRequestException>(() => api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password));
                 }
-                catch (Exception ex)
-                {
-                    Assert.Equal(typeof(MalApiRequestException), ex.GetType());
-                }
+            }
+        }
 
-                try
-                {
-                    AnimeUpdate baseReults = api.GetUserAnimeDetails(username, password, animeId);
+        [Fact]
+        public void TestTest()
+        {
+            string username = System.Environment.GetEnvironmentVariable("MAL_USERNAME");
+            string password = System.Environment.GetEnvironmentVariable("MAL_PASSWORD");
 
-                }
-                catch (Exception ex)
+            int animeId = 7;
+
+            AnimeUpdate partialBaseInfo = new AnimeUpdate()
+            {
+                Episode = 1
+            };
+
+            using (MyAnimeListApi api = new MyAnimeListApi())
+            {
+                using (GetUserAnimeDetailsTest helper = new GetUserAnimeDetailsTest())
                 {
-                    Assert.Equal(typeof(MalApiRequestException), ex.GetType());
-                    Assert.Equal("Failed to log in. Recheck credentials.", ex.Message);
+                    helper.Login(username, password);
+
+                    string test = api.UpdateAnimeForUser(animeId, partialBaseInfo, username, password);
                 }
             }
         }

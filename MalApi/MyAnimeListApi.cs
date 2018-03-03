@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Threading;
-using HtmlAgilityPack;
 
 namespace MalApi
 {
@@ -17,11 +16,6 @@ namespace MalApi
     /// </summary>
     public class MyAnimeListApi : IMyAnimeListApi
     {
-        private static readonly string NoRedirectMalUri = "https://myanimelist.net/pressroom";
-        private static readonly string LoginUri = "https://myanimelist.net/login.php";
-        private static readonly string UserAnimeDetailsUri = "https://myanimelist.net/editlist.php?type=anime&id={0}";
-        private static readonly string UserMangaDetailsUri = "https://myanimelist.net/panel.php?go=editmanga&id={0}";
-
         private static readonly string AnimeDetailsUrlFormat = "https://myanimelist.net/anime/{0}";
 
         private const string RecentOnlineUsersUri = "https://myanimelist.net/users.php";
@@ -52,8 +46,6 @@ namespace MalApi
 
         private HttpClientHandler m_httpHandler;
         private HttpClient m_httpClient;
-
-        private string CsrfToken { get; set; }
 
         public MyAnimeListApi()
         {
@@ -563,7 +555,6 @@ namespace MalApi
             return new RecentUsersResults(users);
         }
 
-        
         private static Lazy<Regex> s_animeDetailsRegex = new Lazy<Regex>(() => new Regex(
 @"Genres:</span>\s*?(?:<a href=""/anime/genre/(?<GenreId>\d+)/[^""]+?""[^>]*?>(?<GenreName>.*?)</a>(?:, )?)*</div>",
 RegexOptions.Compiled));
@@ -579,16 +570,6 @@ RegexOptions.Compiled));
         public Task<AnimeDetailsResults> GetAnimeDetailsAsync(int animeId)
         {
             return GetAnimeDetailsAsync(animeId, CancellationToken.None);
-        }
-
-        public Task<AnimeUpdate> GetUserAnimeDetailsAsync(string username, string password, int animeId)
-        {
-            return GetUserAnimeDetailsAsync(username, password, animeId, CancellationToken.None);
-        }
-
-        public Task<MangaUpdate> GetUserMangaDetailsAsync(string username, string password, int mangaId)
-        {
-            return GetUserMangaDetailsAsync(username, password, mangaId, CancellationToken.None);
         }
 
         /// <summary>
@@ -623,116 +604,6 @@ RegexOptions.Compiled));
             }
         }
 
-        public async Task<AnimeUpdate> GetUserAnimeDetailsAsync(string username, string password, int animeId, CancellationToken cancellationToken)
-        {
-            string url = NoRedirectMalUri;
-
-            HttpRequestMessage request = InitNewRequest(url, HttpMethod.Get);
-
-            Logging.Log.InfoFormat("Getting user anime details for anime ID {0} from {1}.", animeId, url);
-
-            try
-            {
-                // Get CSRF token
-                await ProcessRequestAsync(request, ParseCsrfTokenFromHtml,
-                        cancellationToken: cancellationToken,
-                        baseErrorMessage: "Failed connecting to MAL")
-                    .ConfigureAwait(continueOnCapturedContext: false);
-
-                // Login through the web form
-                url = LoginUri;
-                request = InitNewRequest(url, HttpMethod.Post);
-
-                var contentPairs = new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>("user_name", username),
-                    new KeyValuePair<string, string>("password", password),
-                    new KeyValuePair<string, string>("cookie", "1"),
-                    new KeyValuePair<string, string>("sublogin", "Login"),
-                    new KeyValuePair<string, string>("submit", "1"),
-                    new KeyValuePair<string, string>("csrf_token", CsrfToken)
-                };
-                var content = new FormUrlEncodedContent(contentPairs);
-                request.Content = content;
-
-                await ProcessRequestAsync(request, WebFormLoginHandler,
-                        cancellationToken: cancellationToken,
-                        baseErrorMessage: string.Format("Failed to log in for user {0}.", username))
-                    .ConfigureAwait(continueOnCapturedContext: false);
-
-                // Retrieve anime specific info for user
-                url = string.Format(UserAnimeDetailsUri, animeId);
-                request = InitNewRequest(url, HttpMethod.Get);
-
-                AnimeUpdate results = await ProcessRequestAsync(request, ScrapeUserAnimeDetailsFromHtml,
-                                            cancellationToken: cancellationToken,
-                                            baseErrorMessage: string.Format("Failed getting user anime details for user {0} anime ID {1}.", username, animeId))
-                                            .ConfigureAwait(continueOnCapturedContext: false);
-                Logging.Log.InfoFormat("Successfully got details from {0}.", url);
-                return results;
-            }
-            catch (OperationCanceledException)
-            {
-                Logging.Log.InfoFormat("Canceled getting anime details for anime ID {0}.", animeId);
-                throw;
-            }
-        }
-
-        public async Task<MangaUpdate> GetUserMangaDetailsAsync(string username, string password, int mangaId, CancellationToken cancellationToken)
-        {
-            string url = NoRedirectMalUri;
-
-            HttpRequestMessage request = InitNewRequest(url, HttpMethod.Get);
-
-            Logging.Log.InfoFormat("Getting user manga details for manga ID {0} from {1}.", mangaId, url);
-
-            try
-            {
-                // Get CSRF token
-                await ProcessRequestAsync(request, ParseCsrfTokenFromHtml,
-                        cancellationToken: cancellationToken,
-                        baseErrorMessage: "Failed connecting to MAL")
-                    .ConfigureAwait(continueOnCapturedContext: false);
-
-                // Login through the web form
-                url = LoginUri;
-                request = InitNewRequest(url, HttpMethod.Post);
-
-                var contentPairs = new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>("user_name", username),
-                    new KeyValuePair<string, string>("password", password),
-                    new KeyValuePair<string, string>("cookie", "1"),
-                    new KeyValuePair<string, string>("sublogin", "Login"),
-                    new KeyValuePair<string, string>("submit", "1"),
-                    new KeyValuePair<string, string>("csrf_token", CsrfToken)
-                };
-                var content = new FormUrlEncodedContent(contentPairs);
-                request.Content = content;
-
-                await ProcessRequestAsync(request, WebFormLoginHandler,
-                        cancellationToken: cancellationToken,
-                        baseErrorMessage: string.Format("Failed to log in for user {0}.", username))
-                    .ConfigureAwait(continueOnCapturedContext: false);
-
-                // Retrieve anime specific info for user
-                url = string.Format(UserMangaDetailsUri, mangaId);
-                request = InitNewRequest(url, HttpMethod.Get);
-
-                MangaUpdate results = await ProcessRequestAsync(request, ScrapeUserMangaDetailsFromHtml,
-                        cancellationToken: cancellationToken,
-                        baseErrorMessage: string.Format("Failed getting user manga details for user {0} manga ID {1}.", username, mangaId))
-                    .ConfigureAwait(continueOnCapturedContext: false);
-                Logging.Log.InfoFormat("Successfully got details from {0}.", url);
-                return results;
-            }
-            catch (OperationCanceledException)
-            {
-                Logging.Log.InfoFormat("Canceled getting anime details for anime ID {0}.", mangaId);
-                throw;
-            }
-        }
-
         /// <summary>
         /// Gets information from an anime's "details" page. This method uses HTML scraping and so may break if MAL changes the HTML.
         /// This method does not require a MAL API key.
@@ -743,16 +614,6 @@ RegexOptions.Compiled));
         public AnimeDetailsResults GetAnimeDetails(int animeId)
         {
             return GetAnimeDetailsAsync(animeId).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
-        }
-
-        public AnimeUpdate GetUserAnimeDetails(string username, string password, int animeId)
-        {
-            return GetUserAnimeDetailsAsync(username, password, animeId).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
-        }
-
-        public MangaUpdate GetUserMangaDetails(string username, string password, int mangaId)
-        {
-            return GetUserMangaDetailsAsync(username, password, mangaId).ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
         }
 
         // If getting anime details page returned a 404, throw a MalAnimeNotFound exception instead of letting
@@ -792,368 +653,6 @@ RegexOptions.Compiled));
             }
 
             return new AnimeDetailsResults(genres);
-        }
-
-        // internal for unit testing
-        public string ParseCsrfTokenFromHtml(string html)
-        {
-            Match match = Regex.Match(html, @"<meta name='csrf_token' content='(.+)'>");
-            if (match.Success)
-            {
-                CsrfToken = match.Groups[1].ToString();
-            }
-
-            return CsrfToken;
-        }
-
-        // internal for unit testing
-        public string WebFormLoginHandler(string responseBody)
-        {
-            if (responseBody.Contains("Your username or password is incorrect."))
-            {
-                throw new MalApiRequestException("Failed to log in. Recheck credentials.");
-            }
-
-            return null;
-        }
-
-        // internal for unit testing
-        internal AnimeUpdate ScrapeUserAnimeDetailsFromHtml(string userAnimeDetailsHtml)
-        {
-            AnimeUpdate results = new AnimeUpdate();
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(userAnimeDetailsHtml);
-
-            // Episode
-            results.Episode = doc.GetElementbyId("add_anime_num_watched_episodes").GetAttributeValue("value", -1);
-
-            // Status
-            var parentNode = doc.GetElementbyId("add_anime_status");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    results.Status = (AnimeCompletionStatus)childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-
-            // Enable rewatching
-            results.EnableRewatching = doc.GetElementbyId("add_anime_is_rewatching").Attributes["checked"] == null ? 0 : 1;
-
-            // Score
-            parentNode = doc.GetElementbyId("add_anime_score");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    results.Score = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-
-            // Start date
-            int day = -1;
-            int month = -1;
-            int year = -1;
-            parentNode = doc.GetElementbyId("add_anime_start_date_month");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    month = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            parentNode = doc.GetElementbyId("add_anime_start_date_day");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    day = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            parentNode = doc.GetElementbyId("add_anime_start_date_year");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    year = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            if (month == -1 || day == -1 || year == -1)
-            {
-                results.DateStart = null;
-            }
-            else
-            {
-                results.DateStart = new DateTime(year, month, day);
-            }
-
-            // Date finish
-            parentNode = doc.GetElementbyId("add_anime_finish_date_month");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    month = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            parentNode = doc.GetElementbyId("add_anime_finish_date_day");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    day = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            parentNode = doc.GetElementbyId("add_anime_finish_date_year");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    year = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            if (month == -1 || day == -1 || year == -1)
-            {
-                results.DateFinish = null;
-            }
-            else
-            {
-                results.DateFinish = new DateTime(year, month, day);
-            }
-
-            // Tags
-            results.Tags = doc.GetElementbyId("add_anime_tags").InnerText;
-
-            // Priority
-            parentNode = doc.GetElementbyId("add_anime_priority");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    results.Priority = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-
-            // Storage type
-            parentNode = doc.GetElementbyId("add_anime_storage_type");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    results.StorageType = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-
-            // Storage value
-            results.StorageValue = doc.GetElementbyId("add_anime_storage_value").GetAttributeValue("value", -1);
-
-            // Times rewatched
-            results.TimesRewatched = doc.GetElementbyId("add_anime_num_watched_times").GetAttributeValue("value", -1);
-
-            // Rewatch value
-            parentNode = doc.GetElementbyId("add_anime_rewatch_value");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    results.RewatchValue = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-
-            // Comments
-            results.Comments = doc.GetElementbyId("add_anime_comments").InnerText;
-
-            // Enable discussion
-            parentNode = doc.GetElementbyId("add_anime_is_asked_to_discuss");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    // Because 'Enable discussion = 1' sent for update sets the first options of the dropdown, which corresponds to 0 and vice versa...
-                    int temp = childNode.GetAttributeValue("value", -1);
-                    temp = temp == 1 ? 0 : 1;
-                    results.EnableDiscussion = temp;
-                    break;
-                }
-            }
-
-            return results;
-        }
-
-        // internal for unit testing
-        internal MangaUpdate ScrapeUserMangaDetailsFromHtml(string userMangaDetailsHtml)
-        {
-            MangaUpdate results = new MangaUpdate();
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(userMangaDetailsHtml);
-
-            // Chapter
-            results.Chapter = doc.GetElementbyId("add_manga_num_read_chapters").GetAttributeValue("value", -1);
-
-            // Volume
-            results.Volume = doc.GetElementbyId("add_manga_num_read_volumes").GetAttributeValue("value", -1);
-
-            // Status
-            var parentNode = doc.GetElementbyId("add_manga_status");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    results.Status = (MangaCompletionStatus)childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-
-            // Enable rereading
-            results.EnableRereading = doc.GetElementbyId("add_manga_is_rereading").Attributes["checked"] == null ? 0 : 1;
-
-            // Score
-            parentNode = doc.GetElementbyId("add_manga_score");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    results.Score = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-
-            // Start date
-            int day = -1;
-            int month = -1;
-            int year = -1;
-            parentNode = doc.GetElementbyId("add_manga_start_date_month");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    month = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            parentNode = doc.GetElementbyId("add_manga_start_date_day");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    day = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            parentNode = doc.GetElementbyId("add_manga_start_date_year");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    year = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            if (month == -1 || day == -1 || year == -1)
-            {
-                results.DateStart = null;
-            }
-            else
-            {
-                results.DateStart = new DateTime(year, month, day);
-            }
-
-            // Date finish
-            parentNode = doc.GetElementbyId("add_manga_finish_date_month");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    month = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            parentNode = doc.GetElementbyId("add_manga_finish_date_day");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    day = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            parentNode = doc.GetElementbyId("add_manga_finish_date_year");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    year = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-            if (month == -1 || day == -1 || year == -1)
-            {
-                results.DateFinish = null;
-            }
-            else
-            {
-                results.DateFinish = new DateTime(year, month, day);
-            }
-
-            // Tags
-            results.Tags = doc.GetElementbyId("add_manga_tags").InnerText;
-
-            // Priority
-            parentNode = doc.GetElementbyId("add_manga_priority");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    results.Priority = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-
-            // Times reread
-            results.TimesReread = doc.GetElementbyId("add_manga_num_read_times").GetAttributeValue("value", -1);
-
-            // Reread value
-            parentNode = doc.GetElementbyId("add_manga_reread_value");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    results.RereadValue = childNode.GetAttributeValue("value", -1);
-                    break;
-                }
-            }
-
-            // Comments
-            results.Comments = doc.GetElementbyId("add_manga_comments").InnerText;
-
-            // Enable discussion
-            parentNode = doc.GetElementbyId("add_manga_is_asked_to_discuss");
-            foreach (var childNode in parentNode.ChildNodes)
-            {
-                if (childNode.Attributes["selected"] != null)
-                {
-                    // Because 'Enable discussion = 1' sent for update sets the first options of the dropdown, which corresponds to 0 and vice versa...
-                    int temp = childNode.GetAttributeValue("value", -1);
-                    temp = temp == 1 ? 0 : 1;
-                    results.EnableDiscussion = temp;
-                    break;
-                }
-            }
-
-            return results;
         }
 
         public void Dispose()

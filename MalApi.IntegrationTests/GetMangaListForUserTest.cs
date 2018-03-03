@@ -9,8 +9,6 @@ using System.Threading;
 
 namespace MalApi.IntegrationTests
 {
-    // Environment variables in the Initialize method have to be set up properly
-    // In order for the test to succeed they need to be executed at the same (so the Environment variable can be set and used).
     public class GetMangaListForUserTest
     {
         [Fact]

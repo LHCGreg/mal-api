@@ -64,7 +64,7 @@ namespace MalApi.UnitTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                AnimeUpdate results = api.ScrapeUserAnimeDetailsFromHtml(html);
+                AnimeUpdate results = MalDetailScrapingUtils.ScrapeUserAnimeDetailsFromHtml(html);
 
                 Assert.Equal(info.Episode, results.Episode);
                 Assert.Equal(info.Status, results.Status);
@@ -112,7 +112,7 @@ namespace MalApi.UnitTests
 
             using (MyAnimeListApi api = new MyAnimeListApi())
             {
-                MangaUpdate results = api.ScrapeUserMangaDetailsFromHtml(html);
+                MangaUpdate results = MalDetailScrapingUtils.ScrapeUserMangaDetailsFromHtml(html);
 
                 Assert.Equal(info.Chapter, results.Chapter);
                 Assert.Equal(info.Volume, results.Volume);
