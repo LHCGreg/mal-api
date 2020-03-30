@@ -1,3 +1,7 @@
+myanimelist.net's API was taken down in 2018. There is now a new API, but I no longer watch anime and am not interested in investing the time to update this library.
+
+----
+
 MalApi is a .NET library written in C# for accessing the myanimelist.net API or using scraping methods where no official API is available. Using it is easy:
 
 ```C#
