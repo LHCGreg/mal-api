@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
@@ -31,7 +30,8 @@ namespace MalApi
                 // No async version of XDocument.Load in the full framework yet.
                 // StringReader won't block though.
                 XDocument doc = XDocument.Load(sanitizedXmlTextReader);
-                return Parse(doc);
+
+                return ParseResults(doc);
             }
         }
 
@@ -104,7 +104,7 @@ namespace MalApi
         /// </summary>
         /// <param name="doc"></param>
         /// <returns></returns>
-        public static MalUserLookupResults Parse(XDocument doc)
+        public static MalUserLookupResults ParseResults(XDocument doc)
         {
             Logging.Log.Trace("Parsing XML.");
 
@@ -127,69 +127,142 @@ namespace MalApi
             int userId = GetElementValueInt(myinfo, "user_id");
             string canonicalUserName = GetElementValueString(myinfo, "user_name");
 
-            List<MyAnimeListEntry> entries = new List<MyAnimeListEntry>();
+            List<MyAnimeListEntry> animeEntries = new List<MyAnimeListEntry>();
+            List<MyMangaListEntry> mangaEntries = new List<MyMangaListEntry>();
 
-            IEnumerable<XElement> animes = doc.Root.Elements("anime");
-            foreach (XElement anime in animes)
+            // Anime entries
+            if (doc.Root.Element("anime") != null)
             {
-                int animeId = GetElementValueInt(anime, "series_animedb_id");
-                string title = GetElementValueString(anime, "series_title");
+                IEnumerable<XElement> animes = doc.Root.Elements("anime");
+                foreach (XElement anime in animes)
+                {
+                    int animeId = GetElementValueInt(anime, "series_animedb_id");
+                    string title = GetElementValueString(anime, "series_title");
 
-                string synonymList = GetElementValueString(anime, "series_synonyms");
-                string[] rawSynonyms = synonymList.Split(SynonymSeparator, StringSplitOptions.RemoveEmptyEntries);
+                    string synonymList = GetElementValueString(anime, "series_synonyms");
+                    string[] rawSynonyms = synonymList.Split(SynonymSeparator, StringSplitOptions.RemoveEmptyEntries);
 
-                // filter out synonyms that are the same as the main title
-                HashSet<string> synonyms = new HashSet<string>(rawSynonyms.Where(synonym => !synonym.Equals(title, StringComparison.Ordinal)));
+                    // filter out synonyms that are the same as the main title
+                    HashSet<string> synonyms = new HashSet<string>(rawSynonyms.Where(synonym => !synonym.Equals(title, StringComparison.Ordinal)));
 
-                int seriesTypeInt = GetElementValueInt(anime, "series_type");
-                MalAnimeType seriesType = (MalAnimeType)seriesTypeInt;
+                    int seriesTypeInt = GetElementValueInt(anime, "series_type");
+                    MalAnimeType seriesType = (MalAnimeType)seriesTypeInt;
 
-                int numEpisodes = GetElementValueInt(anime, "series_episodes");
+                    int numEpisodes = GetElementValueInt(anime, "series_episodes");
 
-                int seriesStatusInt = GetElementValueInt(anime, "series_status");
-                MalSeriesStatus seriesStatus = (MalSeriesStatus)seriesStatusInt;
+                    int seriesStatusInt = GetElementValueInt(anime, "series_status");
+                    MalAnimeSeriesStatus seriesStatus = (MalAnimeSeriesStatus)seriesStatusInt;
 
-                string seriesStartString = GetElementValueString(anime, "series_start");
-                UncertainDate seriesStart = UncertainDate.FromMalDateString(seriesStartString);
+                    string seriesStartString = GetElementValueString(anime, "series_start");
+                    UncertainDate seriesStart = UncertainDate.FromMalDateString(seriesStartString);
 
-                string seriesEndString = GetElementValueString(anime, "series_end");
-                UncertainDate seriesEnd = UncertainDate.FromMalDateString(seriesEndString);
+                    string seriesEndString = GetElementValueString(anime, "series_end");
+                    UncertainDate seriesEnd = UncertainDate.FromMalDateString(seriesEndString);
 
-                string seriesImage = GetElementValueString(anime, "series_image");
+                    string seriesImage = GetElementValueString(anime, "series_image");
 
-                MalAnimeInfoFromUserLookup animeInfo = new MalAnimeInfoFromUserLookup(animeId: animeId, title: title,
-                    type: seriesType, synonyms: synonyms, status: seriesStatus, numEpisodes: numEpisodes, startDate: seriesStart,
-                    endDate: seriesEnd, imageUrl: seriesImage);
+                    MalAnimeInfoFromUserLookup animeInfo = new MalAnimeInfoFromUserLookup(animeId: animeId, title: title,
+                        type: seriesType, synonyms: synonyms, status: seriesStatus, numEpisodes: numEpisodes, startDate: seriesStart,
+                        endDate: seriesEnd, imageUrl: seriesImage);
 
 
-                int numEpisodesWatched = GetElementValueInt(anime, "my_watched_episodes");
+                    int numEpisodesWatched = GetElementValueInt(anime, "my_watched_episodes");
 
-                string myStartDateString = GetElementValueString(anime, "my_start_date");
-                UncertainDate myStartDate = UncertainDate.FromMalDateString(myStartDateString);
+                    string myStartDateString = GetElementValueString(anime, "my_start_date");
+                    UncertainDate myStartDate = UncertainDate.FromMalDateString(myStartDateString);
 
-                string myFinishDateString = GetElementValueString(anime, "my_finish_date");
-                UncertainDate myFinishDate = UncertainDate.FromMalDateString(myFinishDateString);
+                    string myFinishDateString = GetElementValueString(anime, "my_finish_date");
+                    UncertainDate myFinishDate = UncertainDate.FromMalDateString(myFinishDateString);
 
-                decimal rawScore = GetElementValueDecimal(anime, "my_score");
-                decimal? myScore = rawScore == 0 ? (decimal?)null : rawScore;
+                    decimal rawScore = GetElementValueDecimal(anime, "my_score");
+                    decimal? myScore = rawScore == 0 ? (decimal?)null : rawScore;
 
-                int completionStatusInt = GetElementValueInt(anime, "my_status");
-                CompletionStatus completionStatus = (CompletionStatus)completionStatusInt;
+                    int completionStatusInt = GetElementValueInt(anime, "my_status");
+                    AnimeCompletionStatus completionStatus = (AnimeCompletionStatus)completionStatusInt;
 
-                long lastUpdatedUnixTimestamp = GetElementValueLong(anime, "my_last_updated");
-                DateTime lastUpdated = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) + TimeSpan.FromSeconds(lastUpdatedUnixTimestamp);
+                    long lastUpdatedUnixTimestamp = GetElementValueLong(anime, "my_last_updated");
+                    DateTime lastUpdated = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) + TimeSpan.FromSeconds(lastUpdatedUnixTimestamp);
 
-                string rawTagsString = GetElementValueString(anime, "my_tags");
-                string[] untrimmedTags = rawTagsString.Split(TagSeparator, StringSplitOptions.RemoveEmptyEntries);
-                List<string> tags = new List<string>(untrimmedTags.Select(tag => tag.Trim()));
+                    string rawTagsString = GetElementValueString(anime, "my_tags");
+                    string[] untrimmedTags = rawTagsString.Split(TagSeparator, StringSplitOptions.RemoveEmptyEntries);
+                    List<string> tags = new List<string>(untrimmedTags.Select(tag => tag.Trim()));
 
-                MyAnimeListEntry entry = new MyAnimeListEntry(score: myScore, status: completionStatus, numEpisodesWatched: numEpisodesWatched,
-                    myStartDate: myStartDate, myFinishDate: myFinishDate, myLastUpdate: lastUpdated, animeInfo: animeInfo, tags: tags);
+                    MyAnimeListEntry entry = new MyAnimeListEntry(score: myScore, status: completionStatus, numEpisodesWatched: numEpisodesWatched,
+                        myStartDate: myStartDate, myFinishDate: myFinishDate, myLastUpdate: lastUpdated, animeInfo: animeInfo, tags: tags);
 
-                entries.Add(entry);
+                    animeEntries.Add(entry);
+                }
             }
 
-            MalUserLookupResults results = new MalUserLookupResults(userId: userId, canonicalUserName: canonicalUserName, animeList: entries);
+            // Manga entries
+            if (doc.Root.Element("manga") != null)
+            {
+
+                IEnumerable<XElement> mangas = doc.Root.Elements("manga");
+                foreach (XElement manga in mangas)
+                {
+                    int mangaId = GetElementValueInt(manga, "series_mangadb_id");
+                    string title = GetElementValueString(manga, "series_title");
+
+                    string synonymList = GetElementValueString(manga, "series_synonyms");
+                    string[] rawSynonyms = synonymList.Split(SynonymSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+                    // filter out synonyms that are the same as the main title
+                    HashSet<string> synonyms = new HashSet<string>(rawSynonyms.Where(synonym => !synonym.Equals(title, StringComparison.Ordinal)));
+
+                    int seriesTypeInt = GetElementValueInt(manga, "series_type");
+                    MalMangaType seriesType = (MalMangaType)seriesTypeInt;
+
+                    int numChapters = GetElementValueInt(manga, "series_chapters");
+
+                    int numVolumes = GetElementValueInt(manga, "series_volumes");
+
+                    int seriesStatusInt = GetElementValueInt(manga, "series_status");
+                    MalMangaSeriesStatus seriesStatus = (MalMangaSeriesStatus)seriesStatusInt;
+
+                    string seriesStartString = GetElementValueString(manga, "series_start");
+                    UncertainDate seriesStart = UncertainDate.FromMalDateString(seriesStartString);
+
+                    string seriesEndString = GetElementValueString(manga, "series_end");
+                    UncertainDate seriesEnd = UncertainDate.FromMalDateString(seriesEndString);
+
+                    string seriesImage = GetElementValueString(manga, "series_image");
+
+                    MalMangaInfoFromUserLookup mangaInfo = new MalMangaInfoFromUserLookup(mangaId: mangaId, title: title,
+                        type: seriesType, synonyms: synonyms, status: seriesStatus, numChapters: numChapters, numVolumes: numVolumes, startDate: seriesStart,
+                        endDate: seriesEnd, imageUrl: seriesImage);
+
+
+                    int numChaptersRead = GetElementValueInt(manga, "my_read_chapters");
+
+                    int numVolumesRead = GetElementValueInt(manga, "my_read_volumes");
+
+                    string myStartDateString = GetElementValueString(manga, "my_start_date");
+                    UncertainDate myStartDate = UncertainDate.FromMalDateString(myStartDateString);
+
+                    string myFinishDateString = GetElementValueString(manga, "my_finish_date");
+                    UncertainDate myFinishDate = UncertainDate.FromMalDateString(myFinishDateString);
+
+                    decimal rawScore = GetElementValueDecimal(manga, "my_score");
+                    decimal? myScore = rawScore == 0 ? (decimal?)null : rawScore;
+
+                    int completionStatusInt = GetElementValueInt(manga, "my_status");
+                    MangaCompletionStatus completionStatus = (MangaCompletionStatus)completionStatusInt;
+
+                    long lastUpdatedUnixTimestamp = GetElementValueLong(manga, "my_last_updated");
+                    DateTime lastUpdated = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) + TimeSpan.FromSeconds(lastUpdatedUnixTimestamp);
+
+                    string rawTagsString = GetElementValueString(manga, "my_tags");
+                    string[] untrimmedTags = rawTagsString.Split(TagSeparator, StringSplitOptions.RemoveEmptyEntries);
+                    List<string> tags = new List<string>(untrimmedTags.Select(tag => tag.Trim()));
+
+                    MyMangaListEntry entry = new MyMangaListEntry(score: myScore, status: completionStatus, numChaptersRead: numChaptersRead, numVolumesRead: numVolumesRead,
+                        myStartDate: myStartDate, myFinishDate: myFinishDate, myLastUpdate: lastUpdated, mangaInfo: mangaInfo, tags: tags);
+
+                    mangaEntries.Add(entry);
+                }
+            }
+            MalUserLookupResults results = new MalUserLookupResults(userId: userId, canonicalUserName: canonicalUserName, animeList: animeEntries, mangaList: mangaEntries);
             Logging.Log.Trace("Parsed XML.");
             return results;
         }

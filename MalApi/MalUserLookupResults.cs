@@ -8,6 +8,7 @@ namespace MalApi
     public class MalUserLookupResults
     {
         public ICollection<MyAnimeListEntry> AnimeList { get; private set; }
+        public ICollection<MyMangaListEntry> MangaList { get; private set; }
         public int UserId { get; private set; }
 
         /// <summary>
@@ -15,11 +16,20 @@ namespace MalApi
         /// </summary>
         public string CanonicalUserName { get; private set; }
 
+        // Left for backwards compatibility
         public MalUserLookupResults(int userId, string canonicalUserName, ICollection<MyAnimeListEntry> animeList)
         {
             UserId = userId;
             CanonicalUserName = canonicalUserName;
             AnimeList = animeList;
+        }
+
+        public MalUserLookupResults(int userId, string canonicalUserName, ICollection<MyAnimeListEntry> animeList, ICollection<MyMangaListEntry> mangaList)
+        {
+            UserId = userId;
+            CanonicalUserName = canonicalUserName;
+            AnimeList = animeList;
+            MangaList = mangaList;
         }
     }
 }

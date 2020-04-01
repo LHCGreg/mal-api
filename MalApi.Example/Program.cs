@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+
 
 namespace MalApi.Example
 {
@@ -24,7 +26,26 @@ namespace MalApi.Example
                 api.UserAgent = "MalApiExample";
                 api.TimeoutInMs = 15000;
 
-                MalUserLookupResults userLookup = api.GetAnimeListForUser("LordHighCaptain");
+                var animeUpdateInfo = new AnimeUpdate()
+                {
+                    Episode = 26,
+                    Status = AnimeCompletionStatus.Completed,
+                    Score = 9,
+                };
+                string userUpdateAnime = api.UpdateAnimeForUser(1, animeUpdateInfo, "user", "password");
+
+                var mangaUpdateInfo = new MangaUpdate()
+                {
+                    Chapter = 20,
+                    Volume = 3,
+                    Score = 8,
+                    Status = MangaCompletionStatus.Completed
+                };
+                string userUpdateManga = api.UpdateMangaForUser(952, mangaUpdateInfo, "user", "password");
+
+
+
+                MalUserLookupResults userLookup = api.GetAnimeListForUser("user");
                 foreach (MyAnimeListEntry listEntry in userLookup.AnimeList)
                 {
                     Console.WriteLine("Rating for {0}: {1}", listEntry.AnimeInfo.Title, listEntry.Score);

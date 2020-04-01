@@ -8,7 +8,7 @@ namespace MalApi
     public class MyAnimeListEntry : IEquatable<MyAnimeListEntry>
     {
         public decimal? Score { get; private set; }
-        public CompletionStatus Status { get; private set; }
+        public AnimeCompletionStatus Status { get; private set; }
         public int NumEpisodesWatched { get; private set; }
         public UncertainDate MyStartDate { get; private set; }
         public UncertainDate MyFinishDate { get; private set; }
@@ -16,7 +16,7 @@ namespace MalApi
         public MalAnimeInfoFromUserLookup AnimeInfo { get; private set; }
         public ICollection<string> Tags { get; private set; }
 
-        public MyAnimeListEntry(decimal? score, CompletionStatus status, int numEpisodesWatched, UncertainDate myStartDate,
+        public MyAnimeListEntry(decimal? score, AnimeCompletionStatus status, int numEpisodesWatched, UncertainDate myStartDate,
             UncertainDate myFinishDate, DateTime myLastUpdate, MalAnimeInfoFromUserLookup animeInfo, ICollection<string> tags)
         {
             Score = score;

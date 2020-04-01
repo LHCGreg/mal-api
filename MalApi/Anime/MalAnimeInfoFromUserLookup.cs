@@ -16,7 +16,7 @@ namespace MalApi
         public MalAnimeType Type { get; private set; }
 
         public ICollection<string> Synonyms { get; private set; }
-        public MalSeriesStatus Status { get; private set; }
+        public MalAnimeSeriesStatus Status { get; private set; }
 
         /// <summary>
         /// Could be 0 for anime that hasn't aired yet or less than the planned number of episodes for a series currently airing.
@@ -27,7 +27,7 @@ namespace MalApi
         public UncertainDate EndDate { get; private set; }
         public string ImageUrl { get; private set; }
 
-        public MalAnimeInfoFromUserLookup(int animeId, string title, MalAnimeType type, ICollection<string> synonyms, MalSeriesStatus status,
+        public MalAnimeInfoFromUserLookup(int animeId, string title, MalAnimeType type, ICollection<string> synonyms, MalAnimeSeriesStatus status,
             int numEpisodes, UncertainDate startDate, UncertainDate endDate, string imageUrl)
         {
             AnimeId = animeId;

@@ -1,5 +1,4 @@
-﻿using MalApi;
-using System;
+﻿using System;
 
 namespace MalApi.NetCoreExample
 {

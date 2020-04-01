@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MalApi
 {
-    public enum MalSeriesStatus
+    public enum MalAnimeSeriesStatus
     {
         Airing = 1,
         FinishedAiring = 2,
